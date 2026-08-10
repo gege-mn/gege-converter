@@ -1,0 +1,71 @@
+{
+  "name": "@gege-mn/gege-converter",
+  "version": "0.5.0",
+  "description": "Mongolian Cyrillic → traditional Mongolian script (Mongol bichig) converter. Dictionary-and-rules engine, no third-party runtime dependencies, Unicode-correct output.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gege-mn/gege-converter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gege-mn/gege-converter/issues"
+  },
+  "homepage": "https://github.com/gege-mn/gege-converter#readme",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "prepublishOnly": "pnpm build && pnpm typecheck && pnpm test",
+    "lint:output": "node scripts/lint-output.mjs",
+    "status": "node scripts/status.mjs",
+    "eval:parallel": "node scripts/eval-parallel.mjs",
+    "check:orphans": "node scripts/check-orphans.mjs",
+    "review:diff": "node scripts/review-diff.mjs --open",
+    "review": "node scripts/build-review.mjs",
+    "naming": "node scripts/build-naming.mjs",
+    "dev": "node scripts/serve.mjs",
+    "ask": "node scripts/build-ask.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "mongolian",
+    "mongol-bichig",
+    "cyrillic",
+    "transliteration",
+    "converter",
+    "unicode",
+    "classical-mongolian"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@types/node": "^26.1.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "@gege-mn/mongol-bichig": "^0.2.2"
+  }
+}
