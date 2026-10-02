@@ -32,18 +32,19 @@
  *
  * ## The face, named and pinned
  *
- * **Noto Sans Mongolian 3.002** — SIL Open Font License 1.1, from
- * `github.com/notofonts/mongolian`, subset to the Mongolian block with all
- * Mongolian GSUB lookups kept (`calt fina init isol medi rclt vert`, the modern
- * UTN #57 contextual model). Read off the binary's `name` table, not off a
- * README: `uniqueID` is `3.002;GOOG;NotoSansMongolian-Regular` and `head`
- * carries fontRevision 3.002.
+ * **Noto Sans Mongolian 3.100** — SIL Open Font License 1.1, from
+ * `github.com/notofonts/mongolian`, the `hinted` build with all Mongolian GSUB
+ * lookups kept (`fina init isol medi rclt vert`, the modern UTN #57 contextual
+ * model). Read off the binary's `name` table, not off a README: `uniqueID` is
+ * `3.100;GOOG;NotoSansMongolian-Regular` and `head` carries fontRevision 3.100.
  *
  * ⚠ **Every rendering verdict in this project is a verdict at this version.**
  * Upstream Noto has changed Mongolian shaping between releases, so a reader
- * ruling recorded against 3.002 is not automatically a ruling against 3.003.
+ * ruling recorded against 3.100 is not automatically a ruling against 3.101.
  * If the face is ever updated, re-render the corpus and diff the glyph
- * sequences before trusting any prior verdict — the pin is what makes
+ * sequences before trusting any prior verdict (done for 3.002 → 3.100 on
+ * 2026-10-02: every bichig run in this repo kept its letterforms; only
+ * spacing and drawing moved) — the pin is what makes
  * `test/rulings.test.ts` mean the same thing next year as it did the day each
  * row was confirmed.
  */
@@ -73,16 +74,16 @@ export const LOGO_SVG = `<svg class="logo" viewBox="0 0 100 100" xmlns="http://w
  * The bichig face every rendering verdict in this project is a verdict at.
  *
  * Single-sourced because it was a prose literal in two places and is the kind
- * of fact that goes stale silently: the page would keep claiming 3.002 after
+ * of fact that goes stale silently: the page would keep claiming an old version after
  * someone dropped a newer woff2 into the sibling checkout. `version` is what
  * the binary's `name` table reports, so update it only alongside the file.
  */
 export const MONGOL_FONT = {
   name: 'Noto Sans Mongolian',
-  version: '3.002',
-  uniqueId: '3.002;GOOG;NotoSansMongolian-Regular',
+  version: '3.100',
+  uniqueId: '3.100;GOOG;NotoSansMongolian-Regular',
   license: 'SIL Open Font License 1.1',
-  copyright: 'Copyright 2022 The Noto Project Authors',
+  copyright: 'Copyright 2023 The Noto Project Authors',
   source: 'https://github.com/notofonts/mongolian',
 };
 

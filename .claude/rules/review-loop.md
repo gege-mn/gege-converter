@@ -27,7 +27,7 @@ the reader to type bichig.
 
 ## Every verdict is a verdict at one font version
 
-**Noto Sans Mongolian 3.002** — SIL OFL 1.1, `github.com/notofonts/mongolian`,
+**Noto Sans Mongolian 3.100** — SIL OFL 1.1, `github.com/notofonts/mongolian`,
 the modern UTN #57 contextual model. `scripts/lib/brand.mjs` inlines that exact
 woff2 into every review page as a data URI and names the version in
 `MONGOL_FONT`, so what the reader judges is what gege.mn renders — not whatever
@@ -36,7 +36,7 @@ disagree: Android ships none, Apple's has been broken, and both have been
 Unicode-divergent.
 
 ⚠ Upstream Noto has changed Mongolian shaping between releases, so a ruling
-recorded against 3.002 is **not automatically a ruling against 3.003**. If the
+recorded against 3.100 is **not automatically a ruling against 3.101**. If the
 face is updated, re-render the corpus and diff the glyph sequences before
 trusting the existing rulings — the pin is what keeps `test/rulings.test.ts`
 meaning the same thing next year as on the day each row was confirmed.
