@@ -5,8 +5,8 @@
  * A word is a homograph candidate when its SOLO rendering survives in some
  * sentences and not others. The shift rate is the discriminator:
  *
- *   0%   — Tungaamal always renders it the same way; no ambiguity
- *   100% — Tungaamal renders it differently in every sentence than it does alone.
+ *   0%   — the silver always renders it the same way; no ambiguity
+ *   100% — the silver renders it differently in every sentence than it does alone.
  *          That is a systematic difference (a different default in running
  *          text), not context sensitivity, so it is listed separately.
  *   in between — genuinely context-dependent. This is the interesting set.
@@ -205,7 +205,7 @@ against their solo renderings.</p>
 did not. A word that changes in <em>some</em> contexts is a genuine homograph; one that changes in
 <em>all</em> of them just has a different default in running text.</p>
 <p style="margin-bottom:0">This is detection, not extraction. The tool says which words carry more
-than one reading; it does not claim to know what the second reading is, because Tungaamal splits one
+than one reading; it does not claim to know what the second reading is, because the silver splits one
 Cyrillic word into a variable number of bichig tokens and word-level alignment is unreliable.</p>
 </div>
 
@@ -213,7 +213,7 @@ Cyrillic word into a variable number of bichig tokens and word-level alignment i
 ${partial.slice(0, 40).map(card).join('')}
 
 <h2>Always different in running text — ${always.length} words</h2>
-<p class="sub">Not homographs. Tungaamal simply picks another form once the word is in a sentence — worth a
+<p class="sub">Not homographs. The silver simply picks another form once the word is in a sentence — worth a
 look, since several are plural or case allomorph choices.</p>
 <div class="chips">${always.map((a) => `<span class="chip">${esc(a.w)} <span style="color:var(--dim)">${a.total}</span></span>`).join('')}</div>
 

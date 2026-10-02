@@ -4,7 +4,7 @@
  *
  * ## The problem this solves
  *
- * The reference converter does not preserve token count. It merges (миний л →
+ * The silver does not preserve token count. It merges (миний л →
  * one token) and splits (аавгүй → two), a merge shifts every later token with
  * no error signal, and a merge plus a split in the same sentence leaves the
  * counts equal — so **token-count equality proves nothing and is not used as an
@@ -17,7 +17,7 @@
  *
  * ## The three parts
  *
- * 1. `foldSuffixTokens` — the reference converter writes the genitive detached
+ * 1. `foldSuffixTokens` — the silver writes the genitive detached
  *    in *sentence* mode (stem SPACE suffix-with-FVS1) and MVS-connected in
  *    *word* mode, so the identical word is one token in the harvest and two in
  *    a sentence. `attachDetachedSuffix` (in `src/orthography.ts`, ruled on by a
@@ -48,6 +48,12 @@ import { suffixRows, toScript } from '@gege-mn/mongol-bichig';
 const ORTHOGRAPHY = new URL('../../dist/orthography.js', import.meta.url).href;
 export const { attachDetachedSuffix, normalizeOrthography } = await import(ORTHOGRAPHY);
 
+// A row knows how it was repaired, and that decides the normaliser — see
+// `harvest.mjs`. Nothing below calls `normalizeOrthography` on a row directly.
+import { normalizerFor, scriptOf } from './silver.mjs';
+
+export { normalizerFor, scriptOf };
+
 /**
  * Split on literal whitespace only. `\s` and `String.trim()` both match U+202F
  * NNBSP, which is the legacy suffix connector — using either here would rewrite
@@ -66,7 +72,7 @@ export const key = (word) => word.toLowerCase().replace(CYRILLIC_EDGES, '');
 /**
  * Cyrillic tokens that the previous word may swallow.
  *
- * The reference converter attaches enclitics and the plural to the head word
+ * The silver attaches enclitics and the plural to the head word
  * (юм даа → one token, миний л → one token), which is what the harvest does
  * too — it carries 5,395 multi-word Cyrillic keys. The set comes from
  * mongol-bichig's suffix registry rather than being written out here, so it
@@ -128,7 +134,7 @@ export function splitTailsFrom(harvestRows, min = 5) {
   const counts = new Map();
   for (const r of harvestRows) {
     if (!r.cyrillic || !r.unicode || r.cyrillic.includes(' ')) continue;
-    const parts = normalizeOrthography(r.unicode).split(' ');
+    const parts = scriptOf(r).split(' ');
     for (let i = 1; i < parts.length; i += 1) {
       counts.set(parts[i], (counts.get(parts[i]) ?? 0) + 1);
     }
@@ -194,7 +200,7 @@ export function tokenise(row) {
     trim(row.unicode ?? '')
       .split(WS)
       .filter(Boolean),
-  ).map(normalizeOrthography);
+  ).map(normalizerFor(row));
   return { cyr, scr, keys: cyr.map(key) };
 }
 
@@ -204,7 +210,7 @@ export const KIND = { MATCH: 0, MERGE: 1, SPLIT: 2, SKIP_C: 3, SKIP_S: 4 };
 
 /**
  * Costs. Only an oracle *agreement* is rewarded; an oracle disagreement costs
- * nothing extra, because the reference converter genuinely renders some words
+ * nothing extra, because the silver genuinely renders some words
  * differently in context (вэ is one thing in a sentence and another alone) and
  * penalising that would push the search into inventing a merge to dodge it.
  * The DP therefore maximises confirmed anchors and, at equal anchor count,

@@ -38,22 +38,80 @@ const SLOT: Record<SuffixCategory, number> = {
   // is — nothing may follow it.
   'case-possessive': 3,
   particle: 4,
+  // Sits on a genitive and under a case, so it shares their slot; what keeps
+  // it in place is `fitsOrder`, not the number.
+  possession: 2,
   // Word-forming, so it sits inside every inflection: загварлаг takes a case
   // suffix after the -лиг, never before it.
   derivational: 0,
 };
 
+/** The slot every plain case suffix shares. */
+const CASE_SLOT = SLOT.genitive;
+
+/**
+ * The two double cases Khalkha does form, written inner>outer: the genitive
+ * taking a dative (аавынд `abu-yin-du`, "at father's") and the dative taking an
+ * ablative (гэртээс `γer-tü-eče`, "from at home"). Thirteen gold forms are
+ * these two shapes and nothing else, which is how the list was found — the
+ * blanket refusal cost exactly those thirteen.
+ */
+const DOUBLE_CASE: ReadonlySet<string> = new Set([
+  'genitive>dative-locative',
+  'dative-locative>ablative',
+]);
+
 /**
  * May `suffix` sit immediately inside the chain peeled so far?
  *
  * Suffixes are peeled outermost-first, so slots must not increase as we move
- * inward. Equal slots are allowed: stacked case suffixes are rare but this is
- * not the place to rule on them, and forbidding them would be a second change
- * hiding inside this one.
+ * inward. Equal slots are allowed in general — two particles, say — with one
+ * exception: **a case suffix may not sit directly inside another case suffix**,
+ * apart from the two pairings in `DOUBLE_CASE`.
+ *
+ * That exception was left open when the ordering rule landed ("stacked case
+ * suffixes are rare but this is not the place to rule on them") and it is
+ * measured now. Over the 18,743 commonest words of a 133M-token corpus, a
+ * case-inside-case reading won 230 times and matched the silver
+ * 9 times — and those 9 are not double cases either: тэмдэгтийн, хүснэгтийг and
+ * the rest carry the adjective-forming -т, which happens to share its letters
+ * with the dative. Not one genuine case + case form in that sample.
+ *
+ * What the reading was really doing is swallowing the plural: сурагчдын came
+ * out сурагч + dative + genitive `suruγči-du-yin`, компаниудын as
+ * `khompani-du-yin`, because the plural -д/-ууд and the dative look alike once
+ * the epenthetic vowel is peeled. Refusing the stack lets the plural reading
+ * win where it exists (50 of the 221 misses became right outright) and
+ * otherwise falls to a shorter chain. The fused case + reflexive rows have
+ * their own slot and are untouched.
  */
 const fitsOrder = (suffix: SuffixEntry, chain: readonly SuffixEntry[]): boolean => {
   const outer = chain[chain.length - 1];
-  return outer === undefined || SLOT[suffix.category] <= SLOT[outer.category];
+  // Possession is bound to a case: the only thing directly inside `qi`/`qin`
+  // is a genitive. That is the whole of what stops a bare -х — the ending of
+  // every infinitive — from being read as one.
+  if (outer?.category === 'possession') return suffix.category === 'genitive';
+  if (outer === undefined) return true;
+  // …and outside itself it takes what a noun takes: a case, the reflexive.
+  if (suffix.category === 'possession') return SLOT[outer.category] >= CASE_SLOT;
+  if (SLOT[suffix.category] === CASE_SLOT && SLOT[outer.category] === CASE_SLOT) {
+    return DOUBLE_CASE.has(`${suffix.category}>${outer.category}`);
+  }
+  return SLOT[suffix.category] <= SLOT[outer.category];
+};
+
+/** Vowels and the soft finals л м н — what a Cyrillic dative -д, not -т, follows. */
+const SOFT_CYRILLIC = 'аэиоуөүыяеёюйлмн';
+
+/** Does the Cyrillic stem left by the peel end the way this row requires? */
+const fitsCyrillic = (suffix: SuffixEntry, peeled: string): boolean => {
+  if (suffix.afterCyrillic === undefined) return true;
+  // A soft sign is not the stem's last sound: лагерьт is р + т.
+  const stem = peeled.endsWith('ь') ? peeled.slice(0, -1) : peeled;
+  const last = stem[stem.length - 1];
+  if (last === undefined) return false;
+  const soft = SOFT_CYRILLIC.includes(last);
+  return suffix.afterCyrillic === 'soft' ? soft : !soft;
 };
 
 /**
@@ -119,7 +177,11 @@ export function segment(word: string, maxDepth: number = DEFAULT_MAX_DEPTH): Seg
   const ending = detected?.kind === 'participle-habitual' ? detected.ending : undefined;
 
   const walk = (rest: string, chain: readonly SuffixEntry[]): void => {
-    out.push({ stem: rest, suffixes: [...chain].reverse() });
+    // A chain may not END, stem-side, on possession: it has to have found its
+    // genitive. The walk goes on below to look for one.
+    if (chain[chain.length - 1]?.category !== 'possession') {
+      out.push({ stem: rest, suffixes: [...chain].reverse() });
+    }
     if (chain.length >= maxDepth) return;
     for (const suffix of suffixesEndingIn(rest)) {
       if (!harmonyAgrees(harmony, suffix.harmony)) continue;
@@ -133,6 +195,7 @@ export function segment(word: string, maxDepth: number = DEFAULT_MAX_DEPTH): Seg
         continue;
       }
       const peeled = rest.slice(0, rest.length - suffix.cyrillic.length);
+      if (!fitsCyrillic(suffix, peeled)) continue;
       for (const stem of stemForms(peeled, suffix)) {
         if (stem.length < MIN_STEM_LENGTH) continue;
         walk(stem, [...chain, suffix]);

@@ -42,6 +42,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { emptyAttested } from './lib/derivation.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const load = (p) => import(pathToFileURL(resolve(ROOT, p)).href);
@@ -49,6 +50,11 @@ const { analyze } = await load('dist/index.js');
 const { assemble } = await load('dist/generate.js');
 const { segment } = await load('dist/segment.js');
 const { toScript } = await load('dist/romanize.js');
+
+// Gold is scored with the attested tier emptied — see `lib/derivation.mjs`. It
+// is put back before the running-text sections below, which measure the
+// converter as shipped.
+const restoreAttested = await emptyAttested(ROOT);
 
 /**
  * Compare in SCRIPT, never in romanization. γ/g and q/k are allographs of one
@@ -93,7 +99,13 @@ const goldChain = (classical) => {
 function evaluate(gold, { collectMisses = false } = {}) {
   const stats = { top1: 0, emitted: 0, chainOnly: 0, wrong: 0, none: 0, oracle: 0, unreachable: 0 };
   /** Same scoring, split by where the winning candidate's stem came from. */
-  const byTier = { lexicon: [0, 0], harvested: [0, 0], toli: [0, 0], guess: [0, 0] };
+  const byTier = {
+    lexicon: [0, 0],
+    attested: [0, 0],
+    harvested: [0, 0],
+    toli: [0, 0],
+    guess: [0, 0],
+  };
   const misses = [];
 
   for (const g of gold) {
@@ -192,6 +204,7 @@ const detachedResult = evaluate(detachedGold, { collectMisses: true });
 report('detached gold forms', detachedResult);
 report('attached gold forms', evaluate(attachedGold));
 report('WHOLE fixture (both halves)', evaluate(allGold), { full: false });
+restoreAttested();
 
 /**
  * Real running text, as sentences of Cyrillic. Shared by `--coverage` and
@@ -224,7 +237,7 @@ const needCorpus = (flag) => {
 };
 
 if (process.argv.includes('--coverage') && needCorpus('--coverage')) {
-  const counts = { lexicon: 0, harvested: 0, toli: 0, guess: 0, none: 0 };
+  const counts = { lexicon: 0, attested: 0, harvested: 0, toli: 0, guess: 0, none: 0 };
   let toks = 0;
   for (const text of corpusSentences()) {
     for (const a of analyze(text)) {
@@ -241,7 +254,7 @@ if (process.argv.includes('--coverage') && needCorpus('--coverage')) {
     console.log(`  ${k.padEnd(10)} ${String(v).padStart(6)}   ${share(v).padStart(6)}`);
   }
   // Everything that is not a guess is attested by some source.
-  const real = counts.lexicon + counts.harvested + counts.toli;
+  const real = counts.lexicon + counts.attested + counts.harvested + counts.toli;
   console.log(
     `  ${'REAL DATA'.padEnd(10)} ${String(real).padStart(6)}   ${share(real).padStart(6)}`,
   );
@@ -260,6 +273,13 @@ if (process.argv.includes('--sentences') && needCorpus('--sentences')) {
     ]),
   );
   tierTop1.none = 0;
+  // The gold above is scored with the `attested` tier emptied, so it has no
+  // rate for that tier — and a missing rate read as zero made every sentence
+  // holding an attested word count as certainly wrong. An attested row is the
+  // silver's own answer for the word, so against this silver set it is
+  // right by construction. `scripts/eval-sentences.mjs` MEASURES the sentence
+  // figure instead of modelling it; prefer that number where it exists.
+  tierTop1.attested = 1;
 
   const guessBuckets = new Map();
   const lenBuckets = new Map();
@@ -275,9 +295,13 @@ if (process.argv.includes('--sentences') && needCorpus('--sentences')) {
     for (const a of analyze(text)) {
       if (a.token.kind !== 'word') continue;
       words += 1;
-      const tier = a.candidates[0]?.provenance ?? 'none';
+      const top = a.candidates[0];
+      const tier = top?.provenance ?? 'none';
       if (tier === 'guess' || tier === 'none') guessed += 1;
-      p *= tierTop1[tier];
+      // An attested row pressed into service as a STEM is a derivation like any
+      // other, not the silver's own answer; it gets the harvested rate.
+      const asStem = tier === 'attested' && top.segmentation.suffixes.length > 0;
+      p *= tierTop1[asStem ? 'harvested' : tier];
     }
     if (words === 0) continue;
 

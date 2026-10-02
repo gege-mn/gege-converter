@@ -220,3 +220,87 @@ describe('custom ranker', () => {
     expect(word?.candidates[0]?.classical).toBe('qara');
   });
 });
+
+describe('the plural of an agent noun', () => {
+  // -чид on a `či` stem is the plural `d` fused on, not the dative: сурагчид is
+  // `suruγčid`. Measured 2026-10-02 — 248 of 258 such words in running text.
+  const top = (word: string) => analyze(word)[0]?.candidates[0]?.classical;
+
+  it('reads -чид as the plural', () => {
+    expect(top('сурагчид')).toBe('suruγčid');
+    expect(top('судлаачид')).toBe('suduluγačid');
+  });
+
+  it('carries the plural into the oblique forms, where the и is dropped', () => {
+    expect(top('сурагчдын')).toBe('suruγčid-un');
+    expect(top('сурагчдад')).toBe('suruγčid-tu');
+    expect(top('төлөөлөгчдийн')).toBe('tölüγeleγčid-ün');
+  });
+
+  it('still offers the dative, which the same letters also spell', () => {
+    const readings = analyze('сурагчид')[0]?.candidates.map((c) => c.classical);
+    expect(readings).toContain('suruγči-du');
+  });
+
+  it('leaves a short ч-final noun its dative', () => {
+    // мөчид is "at the moment", `möče-dü` (the stem is `möče` — reader,
+    // 2026-10-02). Three letters is not an agent noun.
+    expect(top('мөчид')).toBe('möče-dü');
+    expect(top('эмчид')).toBe('emči-dü');
+  });
+
+  it('does not touch a ч-final noun that takes no plural', () => {
+    expect(top('сурагчийн')).toBe('suruγči-yin');
+  });
+});
+
+describe('an unknown word that is two known words written together', () => {
+  it('joins the two rows, and still calls it a guess', () => {
+    // ган `γang` + болд `bolud`; the tail's o is no longer in the first
+    // syllable, so it folds to u. Letter by letter this came out as an unknown
+    // ганбол with a dative on it.
+    const [token] = analyze('ганболд');
+    expect(token?.candidates[0]?.classical).toBe('γangbulud');
+    expect(token?.candidates[0]?.provenance).toBe('guess');
+  });
+
+  it('takes a case suffix like any other stem', () => {
+    expect(analyze('ганболдын')[0]?.candidates[0]?.classical).toBe('γangbulud-un');
+  });
+
+  it('does not split a short word, or one with a three-letter tail', () => {
+    // хал + дун and бичиг + дэх are how the rule goes wrong: at seven letters
+    // and a four-letter tail it loses one word in the silver set, below that six.
+    for (const word of ['халдун', 'бичигдэх']) {
+      const top = analyze(word)[0]?.candidates[0];
+      expect(top?.classical, word).not.toMatch(/^qala|^bičigdeqi/);
+    }
+  });
+});
+
+describe('-тай³ with a linking г and a case after it', () => {
+  it('builds the instrumental, the reflexive and the accusative', () => {
+    // Detached, as -тай³ is by house style — and well-formed after a plural,
+    // which the attached spelling is not.
+    expect(convert('амжилттайгаар')).toBe(toScript('amǰilta-tai-bar'));
+    expect(convert('морьтойгоо')).toBe(toScript('mori-tai-ban'));
+    expect(convert('хүүхдүүдтэйгээр')).toBe(toScript('qeüqed-üd-tei-ber'));
+  });
+});
+
+describe('a suffix that attaches, on a stem that ends in a chachlag', () => {
+  it('loses the connector: the vowel is no longer word-final', () => {
+    // гавьяа is `γabiy-a`. Fused onto it, the adjective -т used to strand the
+    // MVS mid-word (`γabiy-atu`), which is not a spelling of anything.
+    expect(convert('гавьяат')).toBe(toScript('γabiyatu'));
+    expect(convert('тоосголог')).toBe(toScript('toγusγalig'));
+  });
+
+  it('never attaches to a word that already ends in a detached suffix', () => {
+    // өөрийн is the row `öber-ün`; a дагавар fused onto that genitive is not a
+    // word, and no candidate may say it is.
+    for (const candidate of analyze('өөрийнт')[0]?.candidates ?? []) {
+      expect(candidate.classical).not.toMatch(/-[^-]{2,}(tü|tu|lig)$/);
+    }
+  });
+});

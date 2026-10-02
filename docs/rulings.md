@@ -68,7 +68,7 @@ Full rationale in that module's header; consequences for training data in
 ## Rulings from a bichig reader (do not re-litigate)
 
 `test/rulings.test.ts` encodes the 2026-07-26 spot-check verdicts as executable
-tests — the highest-authority fixture in the suite, since Tungaamal is only another
+tests — the highest-authority fixture in the suite, since the silver is only another
 converter. It also records, in prose, the three the reader ruled WRONG that we
 still get wrong, with their correct answers, so nobody has to guess what "right"
 was when they come to fix them.
@@ -77,19 +77,19 @@ was when they come to fix them.
 All confirmed 2026-07-26/27. Each overrode something this project had wrong.
 
 - **o/ö only in the first syllable** — categorical. монгол is `mongγul`
-  (ᠮᠣᠩᠭᠤᠯ), NOT Tungaamal's ᠮᠣᠩᠭᠣᠯ. Applies inside ё too: соёлжилт is `soyulǰilt`.
+  (ᠮᠣᠩᠭᠤᠯ), NOT the silver's ᠮᠣᠩᠭᠣᠯ. Applies inside ё too: соёлжилт is `soyulǰilt`.
   Genuine exceptions are lexical: ᠭᠣᠣᠯ (γool, doubled short o) and loanwords.
   This contradicts the Poppe §33 reading in the orthography reference — the
   school rule wins, and that reference now says so.
-- **Medial i-diphthongs are V+i, not V+y+i** — сайн is `sain`. Tungaamal writes
+- **Medial i-diphthongs are V+i, not V+y+i** — сайн is `sain`. The silver writes
   `sayin`; `dropGlideYa` rewrites it. Verified mechanically: applying it to
-  Tungaamal's байгууллага reproduces the reader-supplied form byte for byte.
+  The silver's байгууллага reproduces the reader-supplied form byte for byte.
   **Re-checked against UTN #57 itself on 2026-08-07** — p.18 names ail, aimag
   and taulai as preferred and greys out the y-analysis, and p.15 gives the
   two-tooth medial form to U+1822 with сайн as its example. See the section at
-  the end of this file; Tungaamal's `sayin` is the Inner Mongolian convention,
+  the end of this file; the silver's `sayin` is the Inner Mongolian convention,
   not an error.
-- **найм is ᠨᠠᠶ᠋ᠮᠠ** (NA A YA FVS1 MA A) — ours is right, Tungaamal's ᠨᠠᠢᠮᠠ is not.
+- **найм is ᠨᠠᠶ᠋ᠮᠠ** (NA A YA FVS1 MA A) — ours is right, the silver's ᠨᠠᠢᠮᠠ is not.
   The reader notes this is the only form the latest Noto Sans Mongolian renders
   correctly.
 - **долоо/долоох do NOT share a stem.** долоох is `doliyaqu`, stem `doliya-` —
@@ -100,7 +100,7 @@ All confirmed 2026-07-26/27. Each overrode something this project had wrong.
   colloquial, same meaning. Both are kept.
 - **Case suffixes are all detached** — confirmed correct, and extended:
   **always detach, even in the singular**, so аавтай is `abu` + connector +
-  `tai`, never `abutai`. Tungaamal attaches ~70% of comitatives and 75% of dative
+  `tai`, never `abutai`. The silver attaches ~70% of comitatives and 75% of dative
   `-т`; we never do. Lexicalised forms (жаргалтай, хатагтай, төстэй) are
   single words, not productive comitatives, and stay whole.
 - **ᠶᠤᠮ (yum) is invariantly masculine** (2026-07-27). It is a **сул үг** — a
@@ -782,7 +782,7 @@ with its own measurement.
 
 ### Where the corrections actually land
 
-Of the 20 spot-check items with a verdict, 14 were "Tungaamal is right" or
+Of the 20 spot-check items with a verdict, 14 were "The silver is right" or
 "both wrong", and almost none of those were suffix-table errors: they were
 **stem** errors (мор vs морь, тün vs tegün, körüng vs körüngge, qoln vs
 qoγula). That is the same finding as the guess tier scoring 0.0%, arriving from
@@ -1013,7 +1013,7 @@ Earlier the same day I read rulebook §2.3.1 — *"Жич: pronoun case forms (�
 should stop emitting these with an MVS, and put the figure at ~2.4% of running
 text. **That is wrong**, and two independent things say so:
 
-- Tungaamal attests `nada-du` (надад), `biden-ü` (бидний), `tan-u` (таны) — all
+- The silver attests `nada-du` (надад), `biden-ü` (бидний), `tan-u` (таны) — all
   MVS-connected;
 - the reader ruled on бидэнд on 2026-07-31 that **ours is correct**, `biden-dü`,
   which is the detached form.
@@ -1047,13 +1047,13 @@ ever wanted; the measurement is why they do not.
 
 ### Open, ranked by corpus tokens — the next asks
 
-1. ~~**чам-/нам- oblique stems** (~6,100 tokens). Ours ᠴᠠᠮ, reference ᠴᠢᠮ᠎ᠠ.~~
-   **Answered 2026-08-04** — see the section below. The reference's ᠴᠢᠮ᠎ᠠ was
+1. ~~**чам-/нам- oblique stems** (~6,100 tokens). Ours ᠴᠠᠮ, silver ᠴᠢᠮ᠎ᠠ.~~
+   **Answered 2026-08-04** — see the section below. The silver's ᠴᠢᠮ᠎ᠠ was
    right about the bare word and would have been wrong for every suffixed one.
 2. ~~**-гүй** (~3,000+ tokens). MVS or space is the question.~~
    **Answered 2026-08-03 — a space**, on five stems. Implemented in
    `src/clitics.ts`.
-3. ~~**ч** (4,982 tokens). Ours ᠴᠢ; Wiktionary *and* the reference both say ᠴᠤ.~~
+3. ~~**ч** (4,982 tokens). Ours ᠴᠢ; Wiktionary *and* the silver both say ᠴᠤ.~~
    **Answered 2026-08-03** — `ču`/`čü`, MVS-connected, harmonised with the word
    before it. Implemented in `src/particles.ts`. Our ᠴᠢ was the pronoun чи.
 4. ~~**Verb + -лаа/-лээ past** (~1,200 tokens).~~ **Answered and implemented**
@@ -1360,7 +1360,7 @@ lists them with sources:
 > all actually, but the recognition opinion of the linguists was changed in the
 > different periods of time."
 
-**Tungaamal writing `sayin` is therefore not a bug in Tungaamal** — it is the
+**The silver writing `sayin` is therefore not a bug in the silver** — it is the
 third row, the Inner Mongolian line. `dropGlideYa` is not repairing an error; it
 is converting between two live conventions, and this project is on the Mongolia
 side of that split. Worth knowing before anyone "fixes" it back.
@@ -1551,7 +1551,7 @@ bulk tier offering `uil` cannot undercut it.
 45 words. The C group (changed by the toli tier) came back **12 of 14 right**,
 which is the review that release needed. The R group (random) was 13/14. The X
 group — where the converter is least confident — was **0 of 14**, and every one
-of those was the reader siding with Tungaamal against us.
+of those was the reader siding with the silver against us.
 
 ### The finding is not the words, it is where they were stuck
 
@@ -1613,7 +1613,7 @@ row, and each needs its own measured round:
 | биеэ | `bey-e-ben` | no segmentation at all — reflexive -ээ after е |
 | клубээс | `khlü1b-eče` | harmony rejects -ээс on a masculine loanword |
 | барьсан | `bariγsan` | verb morphology: linking γ before -сан |
-| голланд | Tungaamal's | **blocked** — needs ᠾ (U+183E) romanized in mongol-bichig |
+| голланд | The silver's | **blocked** — needs ᠾ (U+183E) romanized in mongol-bichig |
 
 And one deferred by the reader: загварынхан, where they were unsure whether -хан
 is a suffix or a word and asked to follow a prior ruling. There is no prior
@@ -1716,7 +1716,7 @@ The first two reproduce with a `slice(-6).includes(MVS)` test over
 is the lemma-list selection bias the roadmap warned about, now measured** — a
 lemma dictionary carries the adjectival `-тай³` as headwords, and
 `aligned-words.jsonl` is built as the *complement* of that harvest, so it
-carries the comitative. The same reference converter spells the same suffix
+carries the comitative. The same silver data spells the same suffix
 oppositely in the two, because they are oppositely selected.
 
 ⚠ **Neither of those two is the measurement to quote, and reading the pair as
@@ -1730,7 +1730,7 @@ wordlist. It agrees with the word harvest and against the aligned pairs, which
 says the aligned figure is the artefact.
 
 None of the three is a correctness measurement, because the reader has just
-said both spellings are correct. They measure what the reference converter
+said both spellings are correct. They measure what the silver
 does. The forced-pairing row is simply the one that measures it on running
 text instead of on a wordlist.
 
@@ -1744,6 +1744,13 @@ becomes `sanaγ-atai`), which is precisely the shape `pnpm lint:output` reports
 as `unknown-suffix` — the same defect already recorded for `-лаг⁴`. Verified:
 `pnpm lint:output` is at **19 `unknown-suffix` warnings** with the залгаж
 reading off, which is where it stands.
+
+> **Update 2026-10-02.** Implemented from the silver, not from the
+> reader: an attached suffix on a chachlag stem takes the connector with it
+> (`sanaγatai`, `γabiyatu`), which is what the silver writes 231 times out
+> of 231. `pnpm lint:output` is at 0. The reader named the rule and has not
+> seen these forms — `docs/roadmap.md`, question 5. The standing choice for
+> `-тай³` is unchanged: дагуулж.
 
 So the залгаж reading ships as an alternative candidate (`OFF_CONVENTION` in
 `src/generate.ts`), never as the default. It is deliberately **not** expressed
@@ -1768,3 +1775,78 @@ row you read.
 This is one reader question, not a rule to derive, and CLAUDE.md's standing ban
 on deriving rules from foreign words applies to every word in that list. Queue
 it as an ask; do not act on the 1.74pp.
+
+## The first review page from the running-text silver set (2026-10-02)
+
+Answers given on `.tmp/spotcheck.html` and in the conversation around it, by
+the owner. Verbatim where it matters.
+
+**Ruled, and implemented the same day**
+
+- **нэг is `nige`.** "nige is correct, nigen = нэгэн." The curated row had
+  `nigen`. ⚠ Only нэг was asked: мянга, гурав, ам, нар still carry their н, and
+  тав is `tabun` by an earlier ruling. Do not generalise from this one.
+- **үнэт is `ünetü`** — a reversal. The 2026-07 article pass recorded `ünedü`.
+  Shown the silver's `ünetü` and the 68 other -т adjectives it writes with
+  `t`: "the silver's might be better". The later answer stands.
+- **A suffix after a number or an abbreviation**: "not sure, but let's just
+  assume that we'd use the suffix as if the word was written. for example АНУ
+  — ends with -un because we'd do ulus un". So the allomorph is the spoken
+  word's, and the connector is MVS. `src/attached.ts`. ⚠ An assumption by its
+  own first two words; the connector after a digit is still a reader's to rule.
+- **-гүйгээр is -гүй + -ээр.** The negative takes its case on үгүй:
+  төлбөргүйгээр `tölbüri` + `ügei-ber`. `src/clitics.ts`.
+- **юмуу is `yum uu`, улстөрийн is `ulus törü-yin`.** "there's no such word
+  юмуу in mongolian, so maybe follow them"; "улс төр is usually separate". A
+  word the silver cuts in two is stored as two.
+- **-тай³ attached or detached: both correct**, said again on six cards. "Or
+  stylistic choice for the converter is to have it separate." Unchanged — and
+  the review page no longer counts a connector as a disagreement.
+
+**Said, and not implemented**
+
+- **Abbreviations are read by letter name.** ХХК is хязгаарлагдмал
+  хариуцлагатай компани, "so it's correct to put sth like хи ха ко (not sure
+  how we handle abbreviations)". The silver's forms for НҮБ and ТҮЦ were
+  marked right. How the syllables are joined is open.
+- **In a foreign word у, ү and ө always take the shilbe; о is the exception**
+  (on паул `paü1l`). A guesser rule, waiting on a way to know a word is
+  foreign.
+- **A compound name's second word keeps its own о**: "баасандорж is a
+  person's name, and consists of two words, баасан and дорж, so дорж doesn't
+  have to follow the оө turns into уү after first syllable rule" — and "they
+  look visually similar". We still fold it, as the normaliser does to the
+  silver's answer; the two are drawn identically.
+
+**Asked, and left open**: the plural after н ("not sure, gotta give me an
+example"), and what гэдэс жийрэглэх does to the letters ("not sure").
+
+## The disagreements page (2026-10-02, second sitting)
+
+The 25 commonest words whose letters differed from the silver's, with the
+settled and the already-asked left off. Sixteen went the silver's way and
+are `same()` assertions in the last block of `test/rulings.test.ts`.
+
+- **гэрээ is two words**: "if it's contract, it's гэр-э, but if it's home/yurt
+  + аа/ээ → гэр-ийэн". The contract is the row; the other is still built.
+  гэрээний is `ger-e-yin` — "this combination of suffixes (ээ + ийн) is not
+  possible with stem гэр". ⚠ That is the silver's form inside the class
+  the `chachlag-genitive` rule protects on the strength of хэмжээний
+  `qemǰiyen-ü`. Both rulings stand; the н is lexical.
+- **хүйтэн** is `küiten` ("it's ү not ө"); **зургаа** is `ǰirγuγ-a` ("if it's
+  just number six"); **уух** is `uuγuqu` ("stem уу"); **мөч** is `möče`.
+- **Converbs, not nouns**: яриад `yariγad`, өгөөд `öggüged` ("stem өг as in to
+  give"), санагдаад `sanaγdaγad` ("stem сана, but you can also reasonably say
+  it started from санагд, but definitely not санагдаа, not even a word").
+- **Possession**: манайх `man-u-qi` ("stem not sure, but definitely isn't
+  манайх"), манайхан, албаныхан, өөрийнх `öber-ün-qi` ("өөр as in self, not
+  different").
+- **дууг** is `daγuu-yi`.
+- **нитх is an abbreviation** (нийслэлийн иргэдийн төлөөлөгчдийн хурал) —
+  "both wrong". Same open question as ХХК.
+- **луу**: the dragon is `luu`; the directive is `uruγu`. Both right, by word.
+- **Not ruled**: аад and ээд ("not sure if it's a word, looks like a suffix"),
+  даанч ("can't even find the correct Cyrillic version").
+- **христийн, лхагва, буддын, шхаб**: the silver is right, and none can be
+  stored — see the roadmap, question 8.
+

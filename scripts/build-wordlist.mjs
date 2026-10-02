@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Merge every Cyrillic word source we have into one deduplicated list, for
- * feeding to the Tungaamal harvester.
+ * feeding to the silver set.
  *
  * Sources are read only if present, so a missing download degrades the list
  * rather than failing the build. Provenance is reported per source so it is

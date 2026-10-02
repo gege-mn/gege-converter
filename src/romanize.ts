@@ -26,6 +26,8 @@
  *   native vocabulary throws instead of shipping a wrong-block error.
  */
 
+import { fromScript, toScript } from '@gege-mn/mongol-bichig';
+
 export {
   finalLetter,
   fromScript,
@@ -33,3 +35,25 @@ export {
   RomanizationError,
   toScript,
 } from '@gege-mn/mongol-bichig';
+
+/**
+ * `toScript` for a reading that is more than one bichig word.
+ *
+ * The two below are this package's own and not part of the re-export. The
+ * alphabet stops at the word boundary on purpose — a space is not a letter,
+ * and `toScript` throws on one — but one Cyrillic word is sometimes two bichig
+ * words: юмуу is `yum uu`, улстөрийн is `ulus törü-yin`. An `attested` row for
+ * such a word carries the space, and each word is romanized by itself.
+ */
+export const wordsToScript = (classical: string): string =>
+  classical
+    .split(' ')
+    .map((word) => toScript(word))
+    .join(' ');
+
+/** The inverse: bichig of one or more words → the same reading, romanized. */
+export const scriptToWords = (script: string): string =>
+  script
+    .split(' ')
+    .map((word) => fromScript(word))
+    .join(' ');

@@ -6,22 +6,177 @@ Read this before optimising anything, quoting a number, or touching the
 ranker. The short version: **getting a real stem is the only lever that
 matters**, and coverage — not top-1 — is the metric that tracks progress.
 
-## Data status (tiers updated 2026-08-10)
+## Data status (tiers updated 2026-10-02)
 
-The lexicon is **four provenance tiers**, resolved in order by `resolveStem`.
-A hit in a higher tier short-circuits the lookup, so a reviewed entry always
-wins outright rather than competing on prior:
+The lexicon is **five provenance tiers**. A hit in a higher tier short-circuits
+the lookup, so a reviewed entry always wins outright rather than competing on
+prior:
 
 | Tier | Rows | Prior | What it is |
 |---|---|---|---|
-| `lexicon` | 181 | per-row `freq` | Hand-curated, reviewed by a bichig reader. `src/data/lexicon.ts`. |
-| `harvested` | 8,680 | `HARVESTED_PRIOR` 0.5 | harvested from Tungaamal, machine-repaired. **Unreviewed.** `src/data/harvested-lexicon.ts`, GENERATED. |
-| `toli` | 41,640 | `TOLI_PRIOR` 0.25 | Headwords from a bundled SQLite dictionary, romanized from its galig column. **Unreviewed, and the largest tier.** `src/data/toli-lexicon.ts`, GENERATED. |
+| `lexicon` | 224 | per-row `freq` | Hand-curated, reviewed by a bichig reader. `src/data/lexicon.ts`. |
+| `attested` | 92,550 | `ATTESTED_PRIOR` 0.9 | **Whole words**, as the silver writes them, stored only where the derivation below disagrees. **Unreviewed.** `src/data/attested-forms.ts`, GENERATED. |
+| `harvested` | 9,048 | `HARVESTED_PRIOR` 0.5 | Stems harvested from the silver, machine-repaired. **Unreviewed.** `src/data/harvested-lexicon.ts`, GENERATED. |
+| `toli` | 40,793 | `TOLI_PRIOR` 0.25 | Headwords from a bundled SQLite dictionary, romanized from its galig column. **Unreviewed, and the largest tier.** `src/data/toli-lexicon.ts`, GENERATED. |
 | `guess` | — | `GUESS_PRIOR` 0.15 | Rule-based fallback in `stem.ts`. |
 
 ⚠ `toli` is **not** just "another harvested tier", and treating it as one is
-measurably wrong — see the section below. It is consulted only where every
+measurably wrong — see its section below. It is consulted only where every
 other path, including each restoration rule, has already missed.
+
+⚠ `attested` is not a stem tier at all. A row is one whole word. It answers
+that word outright, and as a stem it is asked last — after every real stem,
+above only `toli` and a guess. See the next section.
+
+## ★ The attested tier, and where the numbers stand (2026-10-02)
+
+The silver set is **running text**: the 200,000
+commonest word types of a 133M-token corpus — 98.99% of its tokens — plus
+16,816 sentences that show each common word in context (`docs/harvest.md` has
+how, and what it cost to find out). Where its answer for a whole word differs
+from what the pipeline derives, the word is stored: 92,550 rows out of 206,375
+words. The other half the pipeline already writes the same way.
+
+### Why whole words, when `harvested` deliberately refused them
+
+`import-harvest.mjs` routes anything inflected to the gold fixture, because a
+stored inflected form "inflates coverage and hides the fact that the pipeline
+could not have derived it". That was right for a 31k-word lemma silver set and it
+leaves every inflected word in running text to the derivation — which is where
+the loss was. Over the 9,000 commonest words the pipeline and the silver
+disagreed on 12.6% of tokens, and an independent silver set sided with the
+silver about five times in six.
+
+So the two concerns are separated instead of traded. The **package** stores the
+word. The **metric** is protected by scoring every gold fixture with the tier
+emptied (`scripts/lib/derivation.mjs`), so the fixtures go on measuring the
+derivation and nothing else. `--withhold-gold` on the importer restores the
+older rule.
+
+### What it bought
+
+Main (0.5.0) against this working tree, same scripts, same fixtures. The first
+block is what a user gets; the second is the derivation alone, tier emptied.
+
+| | main | now | command |
+|---|---|---|---|
+| words agreeing with the silver, in 2,000 held-out sentences | 79.8% | **94.6%** | `node scripts/eval-sentences.mjs` |
+| …sentences agreeing in every word | 10.8% | **58.4%** | same |
+| independent corpus (lyrics), by token — 450,860 | 69.3% | **79.4%** | `node scripts/eval-corpus.mjs` |
+| independent corpus, by type | 39.3% | **55.8%** | same |
+| held-out words the tier never saw (5,746), letters | 63.9% by token, 39.7% by type | **79.0% by token, 59.4% by type** | `node scripts/eval-heldout.mjs` |
+| …of which built from a stem, not stored anywhere (5,289) | — | **75.0% by token, 56.6% by type** | same, `derived` row |
+| stems from real data, by token | 88.7% | **97.8%** | `node scripts/eval.mjs --coverage` |
+| sentences with no guessed stem | 26.4% | **76.7%** | `node scripts/eval.mjs --sentences` |
+| reader rulings | 160/160 | **196/196** | `node scripts/eval-rulings.mjs` |
+| gold, whole fixture (1,884) — tier emptied | 63.2% | **64.7%** | `node scripts/eval.mjs` |
+| gold, detached half (1,611) — tier emptied | 73.7% | **75.5%** | same |
+| verb gold (197) — tier emptied | 50.8% | **81.7%** | `pnpm status` |
+
+The lyrics corpus is the row to trust most: it is an independent silver set's
+output over different text, so it cannot be flattered by storing the
+silver's own answers.
+
+The gold rows moved for a different reason than the rest — the tier is switched
+off there. They moved because the misses the silver set exposed were read for
+rules: verb stems from the dictionary's infinitives, the agentive plural
+-чид, a final -н that is the word's own and not a linking letter, -тай³ + г +
+case, the dative of a Cyrillic -т chosen by the Classical stem, and an unknown
+compound read as its two known words.
+
+The last 1.2pp of the sentence row is not data either. It is the answers the
+owner gave on two review pages built from this silver set (2026-10-02):
+нэг is `nige`; a suffix after a number or an abbreviation is written as on
+the word it stands for (`attached.ts`); -гүй takes its case on үгүй
+(`clitics.ts`); a word the silver writes as two is stored as two (юмуу
+`yum uu`); and possession is `qi` / `qin` after a genitive (албаныхан
+`alban-u-qin`), a suffix the registry had and this table did not.
+
+### Three things keep it in its place
+
+1. **A whole word is asked first; as a stem it is asked last.** Attested rows
+   include inflected words (яваа, хэлэн). Consulted early as stems they capture
+   every longer word that starts with them — the failure that put `toli` last.
+2. **It does not hold the verb gate shut as a stem.** Only a whole-word row is
+   "settled"; an attested word pressed into service as a stem is not, so
+   яваад still reaches the converb.
+3. **The importer judges the rows twice.** The first pass decides each word
+   with the tier EMPTY, or last run's rows would answer for themselves and the
+   next run would drop them. But at runtime the tier is not empty, and a row
+   used as a stem can take a longer word that was judged fine a moment ago:
+   ингэ's row turned ингээд, which derived correctly, into ингэ + dative. So
+   the accepted rows go live and every word left without one is asked again;
+   where its answer moved, the judged reading is pinned. An independent review
+   found this by reading output, not from a metric — eleven words, 53,766
+   tokens.
+
+### What is withheld, and why each
+
+- **Every word a test asserts on**, unless the silver agrees with a
+  reader's recorded answer for it. A test is a specification.
+- **A 3% hash sample outside the 5,000 commonest words** —
+  `test/fixtures/attested-heldout.json`. The only measurement of what the
+  import does for a word it was not given.
+- **Classes a reader has ruled on**, where the silver follows another
+  convention systematically: the chachlag genitive, the plural after н
+  (`-ud` against `-nuγud` — ⚠ one verdict against 660 silver forms,
+  an open question for the reader), the reflexive after a linking нг. Ours is
+  kept.
+- **Connector-only differences.** MVS against a fused suffix is house style;
+  where our own reading has the silver's letters, ours is kept.
+
+⚠ "Never saw" is true of this tier and not of the package: one held-out word
+in twelve (457) is a whole-word row in an OLDER tier. `eval-heldout.mjs`
+prints them apart — `stored whole` against `derived` — and `derived` is the
+number that speaks for the next unseen word.
+
+### What it cost
+
+`pnpm pack` goes from 488 kB to 1,254 kB. `dist/data/attested-forms.js` is
+2.9 MB unpacked — the largest file in the package, ahead of `toli`.
+
+Most of that is the rare end, and the rare end buys little. The same import at
+four depths (`--min-freq`, occurrences in the 133M-token corpus), each rebuilt
+and scored:
+
+| `--min-freq` | rows | `pnpm pack` | words agreeing, sentences | sentences agreeing | lyrics, by token |
+|---|---|---|---|---|---|
+| 50 | 19,888 | 718 kB | 94.0% | 55.1% | 79.0% |
+| 20 | 40,065 | 871 kB | 94.3% | 56.5% | 79.2% |
+| 10 | 68,346 | 1,077 kB | 94.5% | 57.9% | 79.3% |
+| 0 (shipped) | 92,550 | 1,254 kB | 94.6% | 58.4% | 79.4% |
+
+Shipped at full depth because every band is still worth having — against an
+independent silver set the stored row is right about twice as often as the
+derivation it replaces, all the way down (the table is in the importer's
+header). But the first 20,000 rows carry almost all of the gain, and a build
+that cares about bytes loses 0.6pp of words for half a megabyte. That is the
+owner's call, and it is one flag.
+
+### What is still wrong, largest first
+
+From `node scripts/eval-sentences.mjs --misses 75`, by weight in running text
+— 1,490 words in 2,000 sentences still differ:
+
+- **Abbreviations.** УИХ, НҮБ, ХХК. The silver spells one out by its
+  letter names (ХХК as хэ-хэ-ка); we transliterate the letters as if they
+  were a word (`qqkh`). A reader confirmed the letter names are right. What is
+  not settled is how the syllables are joined in correct Unicode — the
+  silver's own way is a Tungaamal device (ZWJ and a comma after each).
+- **Bare тогтворгүй-н numerals.** нэг was ruled `nige` on 2026-10-02 and
+  fixed. мянга, гурав, ам, нар are still curated with their н (`mingγan`,
+  `aman`) where the silver has none. Only нэг was asked; тав is `tabun` by
+  an earlier ruling.
+- **Homographs.** хүнд is `qündü` "heavy" 81 times and `qümün-dü` "to a
+  person" 70; гэрээ is `γer-e` "contract" 47 times and `γer-iyen` 12, and a test
+  pins it to the second; аж and юу likewise. One answer per word cannot be
+  right about both.
+- **The ordinal after a number** (5-р, 27 дугаар) and the particles ч / л
+  after a word the aligner pairs oddly.
+- **The guesser**, as ever: 2.2% of running tokens, right 15% of the time on
+  held-out words. Loanwords and names. One rule from the reader is not
+  implemented yet: in a foreign word у, ү and ө are written with the shilbe
+  (паул `paü1l`), о is not.
 
 ## ★ The toli tier (2026-08-10)
 
@@ -528,7 +683,7 @@ buys a good assistive tool, not an unattended converter. The rest is the
 categorical holes (verbs, bare `-н`/`-г`, clitics, FVS/loanwords), which are
 missing features rather than tuning.
 
-Caveat on all of it: "correct" means agreeing with the reference converter, not
+Caveat on all of it: "correct" means agreeing with the silver, not
 with a bichig reader. The true figure is unknown and probably lower.
 
 **Read this before optimising anything.** A known stem converts correctly ~84%
@@ -549,7 +704,7 @@ genuinely the best available reading.
 The long-standing open decision, settled with numbers. **Method matters here**:
 the held-out gold set is 1,203 *inflected noun forms* — precisely the
 population these rows help — so it cannot be trusted alone. Every variant was
-also scored over the corpus against the reference converter, counting words
+also scored over the corpus against the silver, counting words
 that moved **toward** its answer versus **away**.
 
 | variant | changed | better | worse | net | top-1 | oracle |
@@ -684,16 +839,16 @@ remaining action and has NOT been done.
 
 ## Homograph discovery (works, unused so far)
 
-Running 4,000 news sentences through Tungaamal and asking whether each word's **solo**
+Running 4,000 news sentences through the silver and asking whether each word's **solo**
 rendering survives in context found 59 context-dependent words with no seed list.
 The discriminator is the shift rate: 0% = unambiguous, 100% = systematic
-difference (Tungaamal just has another default in running text), **in between =
+difference (the silver just has another default in running text), **in between =
 genuine homograph**. Found this way: нар (sun / human plural), ард (behind /
 people), хүнд (heavy / to-a-person), ч (you / concessive particle), сая (million /
 just-now), юу (what / question particle), хар.
 
 This **detects, it does not extract** — it says which words carry a second
-reading, not what it is, because Tungaamal maps one Cyrillic word to a variable
+reading, not what it is, because the silver maps one Cyrillic word to a variable
 number of bichig tokens and word alignment is unreliable.
 
 **The өөр finding, which reframes disambiguation generally:** the ambiguity is
@@ -703,25 +858,25 @@ ambiguous, 59 "different" `öger-e` to 7 "self". So a segmenter that knows the
 reflexive paradigm resolves ~70% of occurrences outright, the frequency prior
 gets bare өөр right ~89%, and only ~7 in 248 need real context. **Teach the
 segmenter the reflexive paradigm before touching ranking.** Where the two
-readings share no substring, Tungaamal's choice across the 4,000 sentences is
+readings share no substring, the silver's choice across the 4,000 sentences is
 labelled training data for the `Ranker` seam.
 
-## ★ Benchmark: a two-reference consensus set (2026-07-31)
+## ★ Benchmark: a two-silver consensus set (2026-07-31)
 
 `scripts/benchmark.mjs`. The first number in this project that can sit beside a
 published one, because it uses the literature's metrics (WER, CER) on a set
 that is not circular.
 
 **The construction.** There is no large true-gold set, and `harvested-lexicon.ts`
-**is** Tungaamal's answers — so scoring against Tungaamal is circular wherever
+**is** the silver's answers — so scoring against the silver is circular wherever
 the harvested tier fires. Two independent converters are now available:
-Tungaamal via the held-out `harvested-inflected.json`, and Inner Mongolia
+The silver via the held-out `harvested-inflected.json`, and Inner Mongolia
 University via the parallel corpus. Their intersection is **684 word types that
 both answer and our lexicon does not contain.**
 
 They agree with each other on **604 of 684 (88.3%)**. That consensus is the
 benchmark set — 17,371 corpus tokens. The 80 contested types are excluded
-because neither reference is trustworthy there.
+because neither silver set is trustworthy there.
 
 | system | types | WER | CER | token-WER |
 |---|---|---|---|---|
@@ -761,7 +916,7 @@ does not:
 - **Same slice.** Both model rows are scored on the types the *pipeline* routes,
   so each sits directly under the row it is meant to be read against.
 - ⚠ **Not controlled for:** the model's training targets are the harvest, which
-  is Tungaamal's output, and half of this reference is Tungaamal. It was trained
+  is the silver's output, and half of this silver set is the silver. It was trained
   to imitate the convention it is being graded on. The pipeline's harvested tier
   has the identical advantage — the two are comparable **to each other**, and
   neither number transfers to a reader-gold set.
@@ -791,10 +946,10 @@ disagreement that gets resolved by whichever number someone looked at first.
 On the **data-backed slice** — the types where a dictionary tier fires, which is
 where the "should the model be promoted above the dictionaries?" question lives:
 
-| set | reference | pipeline | model v3 |
+| set | silver | pipeline | model v3 |
 |---|---|---|---|
-| benchmark consensus, 536 types | Tungaamal ∩ IMU, folded | **13.62% WER** | 19.96% WER |
-| gold `harvested`, 1,355 forms | Tungaamal, exact | 64.6% correct | **71.4% correct** |
+| benchmark consensus, 536 types | silver A ∩ IMU, folded | **13.62% WER** | 19.96% WER |
+| gold `harvested`, 1,355 forms | The silver, exact | 64.6% correct | **71.4% correct** |
 
 **The pipeline wins by 6.3 points on one and loses by 6.8 on the other.** Same
 model, same pipeline, same day.
@@ -812,7 +967,7 @@ They are not measuring the same thing, and the differences all push the same way
 **So `neural-model.md` item 2 — "revisit where the model sits" — is not settled,
 and the gold-set reading of it is not sufficient grounds to act.** Its own
 instruction was "do not change this without measuring"; this is what measuring
-produced. A promotion would need a set that is neither Tungaamal-derived nor
+produced. A promotion would need a set that is neither silver set-derived nor
 restricted to types two converters agree on, which is to say a reader set.
 
 What both sets *do* agree on, unambiguously, is the guessed slice: pipeline
@@ -820,7 +975,7 @@ What both sets *do* agree on, unambiguously, is the guessed slice: pipeline
 benchmark. **The hybrid is safe because that agreement is the only thing it
 depends on.**
 
-⚠ **Consensus is not truth.** Both references follow Inner Mongolian convention
+⚠ **Consensus is not truth.** Both silver sets follow Inner Mongolian convention
 and predate the 2026 rulebook, so they can agree and both be wrong — and they
 agree most confidently exactly where a shared convention differs from ours.
 Upper bound on divergence, not a certificate.
@@ -840,7 +995,7 @@ Two shapes account for most of the consensus misses:
 
 ### ⚠ The invisible-character rule earned its keep
 
-The first run of this benchmark reported that the two references agree **10%**
+The first run of this benchmark reported that the two silver sets agree **10%**
 of the time. They agree 88%. The cause was a regex character class written with
 the connector characters **typed as literals** instead of `\uXXXX` escapes —
 retyping it in an edit silently dropped U+202F, so NNBSP survived folding on one

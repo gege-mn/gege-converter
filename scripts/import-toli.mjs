@@ -50,6 +50,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { emptyAttested } from './lib/derivation.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const arg = (flag) => {
@@ -74,6 +75,12 @@ const { toScript, fromScript } = await load('dist/romanize.js');
 const { normalizeOrthography } = await load('dist/orthography.js');
 const { lexicon, harvestedIndex } = await load('dist/data/lexicon.js');
 const { analyze } = await load('dist/index.js');
+// The `derivable` gate below asks whether a real stem already derives a word.
+// With the `attested` tier live, a whole-word row replaces its derived twin in
+// the candidate list (`generate.ts`, isStronger), the derivation disappears from
+// view, and the word is imported as a stem after all. So the tier is emptied
+// for this run, as it is wherever a gold fixture is scored.
+await emptyAttested(ROOT);
 
 async function loadLinter() {
   for (const spec of [

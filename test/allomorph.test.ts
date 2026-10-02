@@ -75,7 +75,11 @@ describe('reflexive — ban/ben after a vowel, iyan/iyen after a consonant', () 
   });
 
   it('takes iyan/iyen after a consonant-final Classical stem', () => {
-    expect(best('гэрээ')).toBe('ger-iyen');
+    // гэрээ was the example here until 2026-10-02, when a reader pointed out
+    // it is also "contract" (`ger-e`) — the commoner word. The reflexive of
+    // гэр is still built; it is no longer the first reading.
+    expect(analyze('гэрээ')[0]?.candidates.map((c) => c.classical)).toContain('ger-iyen');
+    expect(best('номоо')).toBe('nom-iyan');
     expect(best('малаа')).toBe('mal-iyan');
   });
 
@@ -198,10 +202,35 @@ describe('the suffix table', () => {
       if (key.startsWith('instrumental/') || key.startsWith('reflexive/')) {
         expect([...conditions].sort(), key).toEqual(['consonant', 'vowel']);
       }
+      // Two complete pairs: Cyrillic -д splits hard / not-hard, and Cyrillic -т
+      // — written after a hard Cyrillic final whose Classical stem may still
+      // end in a vowel — splits consonant / vowel.
       if (key.startsWith('dative-locative/')) {
-        expect([...conditions].sort(), key).toEqual(['hard', 'not-hard']);
+        expect([...conditions].sort(), key).toEqual(['consonant', 'hard', 'not-hard', 'vowel']);
       }
     }
+  });
+
+  it('chooses the dative of a Cyrillic -т by the Classical stem, not the Cyrillic one', () => {
+    // бичлэг ends in г and дагавар in р, so Cyrillic writes -т. Classical
+    // `bičilγe` and `daγaburi` end in a vowel, and a vowel takes the d-form.
+    expect(analyze('бичлэгт')[0]?.candidates[0]?.classical).toBe('bičilγe-dü');
+    expect(analyze('дагаварт')[0]?.candidates[0]?.classical).toBe('daγaburi-du');
+    // A stem that is consonant-final in Classical too keeps the t-form.
+    expect(analyze('бичигт')[0]?.candidates[0]?.classical).toBe('bičig-tü');
+  });
+
+  it('reads a -т after a vowel or a soft final as the adjective, never the dative', () => {
+    // The dative there is written -д, so the Cyrillic itself rules it out:
+    // чөлөө + т and эзэн + т are "having", fused, and `tu`/`tü` whatever the
+    // Classical stem ends in.
+    const top = (word: string) => analyze(word)[0]?.candidates[0];
+    expect(top('чөлөөт')?.classical).toBe('čilüγetü');
+    expect(top('эзэнт')?.classical).toBe('eǰentü');
+    expect(top('чөлөөт')?.segmentation.suffixes[0]?.category).toBe('derivational');
+    // After a hard final both are possible and the dative is the commoner.
+    expect(top('дагаварт')?.segmentation.suffixes[0]?.category).toBe('dative-locative');
+    expect(analyze('дагаварт')[0]?.candidates.map((c) => c.classical)).toContain('daγaburitu');
   });
 
   it('conditions no suffix on a stem shape the checker cannot express', () => {

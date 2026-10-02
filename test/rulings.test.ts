@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { analyze, convert, parseVerb } from '../src/index.js';
-import { toScript } from '../src/romanize.js';
+import { toScript, wordsToScript } from '../src/romanize.js';
 
 /**
  * Conversions confirmed by a bichig reader, and the ones they rejected.
  *
  * This is the only test file whose expectations come from a human rather than
- * from Tungaamal or from our own reasoning, which makes it the highest-authority
- * fixture in the suite — Tungaamal is a strong signal but it is still another
+ * from the silver or from our own reasoning, which makes it the highest-authority
+ * fixture in the suite — the silver is a strong signal but it is still another
  * converter, and on the points where this project deliberately differs from it
- * (Unicode 16 connectors, the o/ö rule, the V+i diphthong) Tungaamal is simply
+ * (Unicode 16 connectors, the o/ö rule, the V+i diphthong) the silver is simply
  * wrong. A failure here means the converter regressed against ground truth.
  *
  * Compared in SCRIPT, because γ/g and q/k are harmony-selected allographs of a
@@ -19,13 +19,13 @@ import { toScript } from '../src/romanize.js';
  */
 
 const same = (cyrillic: string, classical: string) =>
-  expect(convert(cyrillic), `${cyrillic} should be ${classical}`).toBe(toScript(classical));
+  expect(convert(cyrillic), `${cyrillic} should be ${classical}`).toBe(wordsToScript(classical));
 
 describe('confirmed by a bichig reader', () => {
   it('restores the unstable vowel Cyrillic drops before a suffix', () => {
     // ажил + аас is written ажлаас; peeling the suffix leaves ажл, which is not
     // a word. All four were previously guesser output and all four were ruled
-    // wrong; Tungaamal's readings were ruled right and are what we now produce.
+    // wrong; the silver's readings were ruled right and are what we now produce.
     same('ажлаас', 'aǰil-ača');
     same('мэргэжлийн', 'merγeǰil-ün');
     same('учраас', 'učir-ača');
@@ -33,7 +33,7 @@ describe('confirmed by a bichig reader', () => {
   });
 
   it('handles the derived plural мэргэжилтнүүд', () => {
-    // Reader-supplied form, not Tungaamal's — Tungaamal has no row for this word.
+    // Reader-supplied form, not the silver's — the silver has no row for this word.
     same('мэргэжилтнүүд', 'merγeǰilten-üd');
   });
 
@@ -90,7 +90,8 @@ describe('confirmed by a bichig reader', () => {
     same('зохиомж', 'ǰoqiyamǰi');
     same('цахиур', 'čaqiγur');
     same('зорихоор', 'ǰoriqu-bar');
-    same('тав', 'tabun');
+    // тав was confirmed `tabun` here and reversed on 2026-10-02 — see the
+    // last block of this file.
   });
 
   /**
@@ -218,7 +219,8 @@ describe('confirmed against a hand-corrected article', () => {
   it('converts the lexical misses the article turned up', () => {
     same('зүгээр', 'ǰüger');
     same('цөөн', 'čögegen');
-    same('үнэт', 'ünedü');
+    // үнэт was ruled `ünedü` here and reversed on 2026-10-02 — see the last
+    // block of this file.
     same('цэн', 'čen-e');
     same('биз', 'biǰe');
     same('тэгээд', 'tegeged');
@@ -274,16 +276,14 @@ describe('known-wrong, awaiting verb morphology', () => {
   // verb чадах is чад in Cyrillic but `čida` in script, so the entry we carry
   // is wrong in a way no suffix rule can fix — and the harvested row for чад
   // alone is `čöγad`, wrong outright.
-  it.todo('чадах → čidaqu, and чад alone must not take a verb ending');
+  // чадах itself closed 2026-10-02 (see the last block); this half is open.
+  it.todo('чад alone must not take a verb ending');
   // From the 2026-07-27 reader pass. хийж was fixed on 2026-07-28 by the
-  // imperfective converb row and now has a real test below; бэлгэшээсэн is
-  // still a guess, and is a missing stem rather than a missing rule — the
-  // dictionary has no бэлгэших.
-  it.todo('бэлгэшээсэн → belgesiyegsen');
-  // Both need a stem the dictionary does not carry (туурвих, бичигдэх), so the
-  // suffix rows that would convert them never fire.
+  // imperfective converb row. бэлгэшээсэн and бичигдэнэ closed 2026-10-02 —
+  // see the last block. туурвиж now has a stem (the silver's туурвих), and
+  // that stem is `tuγurbi` where the reader wrote `toγurbi`: one letter out,
+  // and the reader is the authority.
   it.todo('туурвиж → toγurbiǰu');
-  it.todo('бичигдэнэ → bičiγden-e');
 
   it('no longer asserts an impossible chain for the -ээд converb', () => {
     // Not a claim that küleged is right — only that we stopped emitting a
@@ -305,25 +305,14 @@ describe('known-wrong, awaiting verb morphology', () => {
  * the form the reader wrote, so implementing it needs no second consultation.
  */
 describe('known-wrong, with the reader’s answer already in hand', () => {
-  // The -нх- possessive stack, ruled twice and consistently: it is not a
-  // morpheme at all. улсынхаа is the genitive `-un` followed by the reflexive
-  // `-iyan`, and талынхаа the same over a chachlag stem. This is roadmap item
-  // 4, and it now has ground truth instead of a description.
-  it.todo('улсынхаа → ulus-un-iyan (stem улс)');
-  it.todo('талынхаа → tal-a-yin-iyan');
-
-  // Over-segmentation: we split бүтээлчи + дү + ээс, but -чид is the plural
-  // agentive and takes the ablative whole.
-  it.todo('бүтээлчдээс → bütügelčid-eče');
-
-  // Wrong stem, each confirmed with the reader's own romanization.
+  // The -нх- possessive stack (улсынхаа, талынхаа), the agentive plural
+  // (бүтээлчдээс), зочилж, алдуурахаа and дуурийн all closed 2026-10-02 — see
+  // the last block. What is left is wrong stems, each with the reader's own
+  // romanization.
   it.todo('биенийгээ → bei-e-yi-ben (stem бие, not би)');
-  it.todo('зочилж → ǰočilaǰu (stem зочил, we carry зочи)');
   it.todo('энүүхнээр → enüken-iyer');
   it.todo('орчихдог → orčiqadaγ');
-  it.todo('алдуурахаа → aldaγuraqu-ban');
   it.todo('дунгаар → stem дун, so дун + аар');
-  it.todo('дуурийн → дуурь + ийн');
 });
 
 describe('гэдэс goes in only at an attached junction, ruled 2026-07-29', () => {
@@ -727,9 +716,6 @@ describe('the release spot-check, ruled 2026-08-06', () => {
     same('хэмжээний', 'qemǰiyen-ü');
   });
 
-  // The stem is `ün-e` in the lexicon and the inflected form drops the -e.
-  it.todo('үнийг is ün-e-yi — the suffix must not eat the stem vowel');
-
   // ✅ CLOSED 2026-08-10, and NOT by the ш rule this was filed under.
   //
   // The ш → ᠰ half was never the blocker: the bare row already spelt `baising`
@@ -745,16 +731,9 @@ describe('the release spot-check, ruled 2026-08-06', () => {
     same('байшингийн', 'baising-un');
   });
 
+  // үнийг, ингэснээр, ингээд, хүүхэлдэйн, одоохондоо and дуурийн were todos
+  // here and closed 2026-10-02 — see the last block.
   it.todo('гишгэгдэх is γisqiγdeqü and өнгөлүүл is öngγeleγül — epenthetic vowels');
-  it.todo('ингэснээр is ingγiγsen-iyer');
-  it.todo('хүүхэлдэйн is qeüqeldei-yin');
-  it.todo('одоохондоо is oduqan-du-ban — currently mis-segmented as oduqund-iyan');
-
-  // дуурийн `daγuri-yin` against our `dur-un`: the long vowel is a contracted
-  // medial γ. This is the decontraction `stem.ts` deliberately does not do,
-  // and the reader has now put a confirmed instance behind it.
-  it.todo('дуурийн is daγuri-yin — the long-vowel ↔ medial γ contraction');
-  it.todo('ингээд is ingγiγed — the epenthetic vowel again, on a converb');
 
   // ✅ CLOSED 2026-08-06, with алт/тос and for the same reason.
   //
@@ -880,7 +859,7 @@ describe('тогтворгүй н, the rule given 2026-08-06', () => {
  * reader — the gap is resolution, not coverage.
  */
 describe('spot-check answered 2026-08-09', () => {
-  // The а/э the suffix absorbed, restored. All four were "Tungaamal is right",
+  // The а/э the suffix absorbed, restored. All four were "The silver is right",
   // i.e. we were wrong and their reading is the target.
   it('finds a chachlag stem through a vowel-initial suffix', () => {
     same('утгыг', 'udq-a-yi');
@@ -933,7 +912,8 @@ describe('spot-check answered 2026-08-09', () => {
   // хэлэнд is `kele-dü` with no н. Both can hold — Хавсралт 2.1.1 conditions
   // the genitive on н where the dative does not — but it means хэл needs a
   // per-case answer rather than one flag, so it is not a one-line change.
-  it.todo('хэлний is kelen-ü while хэлэнд stays kele-dü');
+  // Closed 2026-10-02 as a stored word (the last block); хэл still has one
+  // flag where it needs an answer per case.
 
   // Stems present and correct; the peel cannot reach them. сүү takes a linking
   // г (сүү+г+ээр), эр takes the derivational -чүүд.
@@ -941,8 +921,7 @@ describe('spot-check answered 2026-08-09', () => {
   // ⚠ дэлхийн left this list on 2026-08-10 — see the й restoration in the
   // 2026-08-10 block below. It was the same absorption as хоолойн and
   // заламгайн, which is only visible once three words show the shape.
-  it.todo('сүүгээр is sün-iyer — the linking г belongs to neither side');
-  it.todo('эрчүүд is erečüd — stem эр plus derivational -чүүд');
+  // Both closed 2026-10-02 — see the last block.
 
   // ⚠ энгийн and худалдааг were `it.todo`s here from 2026-07-30 to 2026-08-10.
   // Both are now `same()` assertions in the block below — see the note there
@@ -1027,4 +1006,134 @@ describe('the toli-release spot check (2026-08-10)', () => {
     same('хоолойн', 'qoγulai-yin');
     same('заламгайн', 'ǰalmaγai-yin');
   });
+});
+
+/**
+ * Closed 2026-10-02. Every word below was an `it.todo` somewhere above, with
+ * the reader's answer already written into it.
+ *
+ * ⚠ They did not all close the same way, and the difference is the point.
+ * The first group is derived: a rule or a stem that was missing now exists, so
+ * the word's whole class moves with it. The second group is answered by an
+ * `attested` row — the silver writes exactly what the reader
+ * said, so the word is stored. That fixes the WORD. The rule each todo was
+ * filed under (the epenthetic vowel of ингэ-, the stem vowel of үнэ before
+ * -ийг, a per-case н for хэл) is as missing as it was, and the next word of
+ * the class will still be wrong.
+ */
+describe('reader answers that were standing todos, closed 2026-10-02', () => {
+  it('derives these, from a rule or a stem that was missing', () => {
+    // -чид is the agentive plural and takes the ablative whole.
+    same('бүтээлчдээс', 'bütügelčid-eče');
+    // Verb stems now also come from the dictionary's infinitives.
+    same('бэлгэшээсэн', 'belgesiyegsen');
+    same('зочилж', 'ǰočilaǰu');
+  });
+
+  it('had already been converting correctly, as todos nobody had retired', () => {
+    // The -нх- stack is genitive + reflexive; a linking г belongs to neither
+    // side; the long vowel of дуурь is a contracted medial γ.
+    same('улсынхаа', 'ulus-un-iyan');
+    same('алдуурахаа', 'aldaγuraqu-ban');
+    same('хүүхэлдэйн', 'qeüqeldei-yin');
+    same('дуурийн', 'daγuri-yin');
+    same('сүүгээр', 'sün-iyer');
+  });
+
+  it('answers these as whole words — the rule behind each is still missing', () => {
+    same('чадах', 'čidaqu');
+    same('бичигдэнэ', 'bičiγden-e');
+    same('талынхаа', 'tal-a-yin-iyan');
+    same('үнийг', 'ün-e-yi');
+    same('ингэснээр', 'ingγiγsen-iyer');
+    same('ингээд', 'ingγiγed');
+    same('одоохондоо', 'oduqan-du-ban');
+    same('хэлний', 'kelen-ü');
+    same('эрчүүд', 'erečüd');
+  });
+});
+
+/**
+ * Ruled 2026-10-02, on the review page built from the running-text silver set.
+ */
+describe('ruled 2026-10-02', () => {
+  it('writes нэг without the н — nigen is нэгэн', () => {
+    // "nige is correct, nigen = нэгэн." The curated row had `nigen`.
+    same('нэг', 'nige');
+    same('нэгэн', 'nigen');
+  });
+
+  it('writes юмуу as the two words it is', () => {
+    // Shown the silver's `yum uu` against our one-word guess: "their
+    // response is assuming that the writer wrote юм уу, as in asking
+    // confirmation, since there's no such word юмуу in Mongolian, so maybe
+    // follow them." The same goes for улстөрийн — "улс төр is usually
+    // separate".
+    same('юмуу', 'yum uu');
+    same('улстөрийн', 'ulus törü-yin');
+  });
+
+  it('writes үнэт with t, as the silver does', () => {
+    // A reversal. The 2026-07 article pass recorded `ünedü`; asked again with
+    // The silver's whole class of -т adjectives beside it, the answer was
+    // that the silver's form "might be better". The later answer stands.
+    same('үнэт', 'ünetü');
+  });
+});
+
+/**
+ * Ruled 2026-10-02, on the second review page: the 25 commonest words where
+ * our letters and the silver's differed. Where the verdict was "the
+ * silver is right", the form below is the silver's.
+ */
+describe('ruled 2026-10-02 — the disagreements page', () => {
+  it('reads гэрээ as the contract first, and still offers the yurt', () => {
+    // "if it's contract, it's гэр-э, but if it's home/yurt + аа/ээ → гэр-ийэн"
+    same('гэрээ', 'ger-e');
+    expect(analyze('гэрээ')[0]?.candidates.map((c) => c.classical)).toContain('ger-iyen');
+    // "this combination of suffixes (ээ + ийн) is not possible with stem гэр"
+    same('гэрээний', 'ger-e-yin');
+  });
+
+  it('writes the bare numerals without their н', () => {
+    // нэг, зургаа and тав, each asked by name. тав reverses the `tabun`
+    // confirmed in 2026-07: asked again beside the other two, the answer was
+    // "табу". `tabun` is таван.
+    same('тав', 'tabu');
+    same('таван', 'tabun');
+  });
+
+  it('corrects four curated rows', () => {
+    same('хүйтэн', 'küiten'); // "it's ү not ө"
+    same('зургаа', 'ǰirγuγ-a'); // "if it's just number six"
+    same('уух', 'uuγuqu'); // "stem уу; уу (uuγu) + х (qu)"
+    same('мөчид', 'möče-dü'); // "мөч as in time is written мөчэ"
+  });
+
+  it('writes the converb of a verb, not a noun with a dative', () => {
+    same('яриад', 'yariγad');
+    same('өгөөд', 'öggüged'); // "stem өг as in to give"
+    same('санагдаад', 'sanaγdaγad'); // "definitely not санагдаа, not even a word"
+    same('ярилцлаа', 'yarilčal-a');
+    same('гээч', 'gegeči');
+  });
+
+  it('writes possession with qi and qin', () => {
+    // "stem not sure, but definitely isn't манайх"
+    same('манайх', 'man-u-qi');
+    same('манайхан', 'man-u-qin');
+    same('албаныхан', 'alban-u-qin');
+    // "өөр as in self, not different"
+    same('өөрийнх', 'öber-ün-qi');
+  });
+
+  it('keeps the long vowel of дуу under a case', () => {
+    same('дууг', 'daγuu-yi');
+  });
+
+  // Marked "The silver is right", and not expressible here: each carries a
+  // letter the romanization has no symbol for — ᠾ (U+183E) or ᡀ (U+1840) —
+  // so neither an expected form nor a data row can be written until
+  // mongol-bichig's alphabet has them.
+  it.todo('христийн, буддын, шхаб need ᠾ and лхагва needs ᡀ — the silver is right');
 });

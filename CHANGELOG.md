@@ -1,5 +1,129 @@
 # Changelog
 
+## Unreleased — 2026-10-02
+
+**Not versioned and not published.** `Provenance` gains a member and the package
+exports a second converter, so by this project's own convention it is a minor
+bump (0.6.0) when the owner cuts it.
+
+Two things: a fifth data tier, built from a silver set of
+running text, and a Tungaamal → Unicode converter that had to exist before that
+text could be read correctly.
+
+Main (0.5.0) against this build, same scripts:
+
+| | 0.5.0 | now |
+|---|---|---|
+| words agreeing with the silver, 2,000 held-out sentences | 79.8% | **94.6%** |
+| …sentences agreeing in every word | 10.8% | **58.4%** |
+| independent corpus, token-weighted — 450,860 tokens | 69.3% | **79.4%** |
+| independent corpus, by type | 39.3% | **55.8%** |
+| words withheld from the new tier (5,746) | 63.9% by token, 39.7% by type | **79.0% by token, 59.4% by type** |
+| gold — all inflected forms (1,884), new tier switched off | 63.2% | **64.7%** |
+| gold — verbs, held out (197), new tier switched off | 50.8% | **81.7%** |
+| reader rulings | 160/160 | **196/196** |
+
+### Added — the `attested` tier
+
+92,550 whole Cyrillic words as the silver writes them,
+kept only where the pipeline's own derivation disagrees. Tier order is now
+`lexicon` > `attested` > `harvested` > `toli` > `guess`.
+
+- A row answers its word outright. As a stem it is asked last, after every
+  real stem — the placement lesson `toli` taught, applied before it could be
+  learned again.
+- Gold fixtures are scored with the tier emptied (`scripts/lib/derivation.mjs`).
+  ⚠ This departs from `import-toli.mjs`, which withholds gold words from its
+  tier instead; that rule here would leave about seven hundred common words
+  converting wrongly to protect a metric.
+- A 3% sample of the silver set is withheld as
+  `test/fixtures/attested-heldout.json`, the only measurement of what the tier
+  does for a word it was not given.
+- The importer runs a second pass with its rows live, because a row used as a
+  stem can take a longer word the first pass judged fine.
+
+### Added — `tungaamalToUnicode`
+
+`tungaamalToUnicode(text, { faithful? })`, `rewriteTungaamal`, and
+`detectTungaamal`. Tungaamal-convention bichig — Mongolia's dominant keyboard
+and font family — rewritten into the code points Unicode 16 writes the same
+words with. Self-contained: it shares no code with the Cyrillic pipeline.
+
+It is not a character map. The convention types gender instead of shaping it,
+uses one selector as a toggle, and marks a suffix with a selector rather than a
+connector; 111 rows measured out of the fonts' own GSUB tables say what each
+letter becomes. Faithful mode reproduces what the Tungaamal fonts drew on 9,662
+of 9,686 real tokens (99.7% of occurrences), against Noto Sans Mongolian 3.002
+and the hinted 3.100 build alike. See `docs/tungaamal.md`.
+
+⚠ The old import treated the convention as "standard Hudum plus two letters".
+Every `harvested` row carries the silver's selectors where it has any. That
+tier was **not** regenerated — measured, 174 of 9,048 rows would change and an
+independent silver set prefers the new ones 39 to 23, which is too thin to
+replace a tier every ruling has been tested against.
+
+### Changed — rules found by reading what the silver set disagreed with
+
+- **Verb stems also come from the dictionary's infinitives**, and a parse on a
+  real stem outranks an earlier suffix row's parse on a dictionary one.
+- **A final -н on a whole word is the word's own.** салан was the noun сал
+  with a "linking н" taken off; it is the converb `salun`.
+- **-тай³ + linking г + case** — амжилттайгаар, морьтойгоо. No reading before.
+  Written detached, as -тай³ is by house style; refused where the word up to
+  -тай is itself a row (эмэгтэйгээ is эмэгтэй + г + ээ).
+- **A suffix that attaches to a chachlag stem takes the connector with it** —
+  гавьяат `γabiyatu`, тоосголог `toγusγalig`, where there used to be an MVS
+  stranded mid-word. 231 of 231 in the silver. ⚠ A reader named the rule
+  (гэдэс жийрэглэх) and has not been shown these forms. `pnpm lint:output`
+  goes from 19 warnings to 0.
+- **The dative of a Cyrillic -т follows the Classical stem**: `du` after a
+  vowel (бичлэгт `bičilγe-dü`), 86 of 86 in the silver. And Cyrillic -т is
+  two suffixes — the adjective-forming -т (чөлөөт) is now a row, told from the
+  dative by what the CYRILLIC stem ends in (`SuffixEntry.afterCyrillic`).
+- **An unknown compound is read as its two known words** — ганболд is ган +
+  болд. Still labelled `guess`; right four times in five where the
+  letter-by-letter guess was right one time in twelve.
+- **A case may not sit inside a case**, apart from genitive + dative and
+  dative + ablative.
+- **-чид**, the agentive plural, takes a case whole.
+
+### Changed — ruled on the two review pages (2026-10-02)
+
+- **нэг is `nige`**; `nigen` is нэгэн. The curated row was wrong, and it was
+  the largest single disagreement with running text.
+- **үнэт is `ünetü`** — a reversal of the 2026-07 ruling `ünedü`, on seeing the
+  silver's whole class of -т adjectives.
+- **A suffix after a number, an abbreviation, a Latin word or a closing quote**
+  (2020-ны, 13-нд, АНУ-ын) is written as on the word it stands for: the
+  allomorph follows how the number is read (13-нд `du`, 1-нд `dü`), and the
+  hyphen becomes MVS. New stage, `src/attached.ts`. ⚠ The connector is the
+  owner's working assumption, not a reader's ruling. `tungaamalToUnicode`
+  reads U+1806 before a suffix the same way.
+- **-гүй takes case on үгүй**: төлбөргүйгээр is `tölbüri` + `ügei-ber`.
+- **A word the silver writes as two is stored as two**: юмуу `yum uu`,
+  улстөрийн `ulus törü-yin`. An `attested` reading may contain a space;
+  `wordsToScript` romanizes it word by word, and `foldNonInitialO` no longer
+  reads two words as one.
+
+- **Possession is `qi` / `qin` after a genitive** — албаныхан `alban-u-qin`,
+  өөрийнх `öber-ün-qi`, мориныход `morin-u-qi-du`. The registry had the suffix;
+  the converter's table did not, and 3,421 words in the silver set were guesses.
+  New `SuffixCategory` member, `possession`.
+- **гэрээ is the contract first** (`ger-e`), with гэр + reflexive still
+  offered; хүйтэн `küiten`, зургаа `ǰirγuγ-a`, уух `uuγuqu`, мөч `möče`.
+
+### Changed — 17 reader answers that were `it.todo` are assertions
+
+Three are derived by the rules above, five had been passing unretired, and nine
+are answered by an `attested` row — the word is right, the rule its todo was
+filed under is as missing as it was. `test/rulings.test.ts` says which is
+which.
+
+### Fixed
+
+- `eval.mjs --coverage` left the new tier out of its "real data" total, and
+  `--sentences` read the tier's missing gold rate as zero.
+
 ## 0.5.0 — 2026-08-10
 
 **A fourth stem tier.** 41,640 headwords from a bundled SQLite dictionary,
@@ -342,7 +466,7 @@ per-tier slice says where the loss is. As shipped in this release:
 | `harvested` | 75.1% | 49.4% |
 | `guess` | **18.5%** | **21.1%** |
 
-⚠ The reference is **silver**, same trust tier as `harvested`. A disagreement is
+⚠ The silver is **silver**, same trust tier as `harvested`. A disagreement is
 a ranked question, never an error.
 
 **Three guesser fixes, each with zero counterexamples in the attested data.**
@@ -366,8 +490,8 @@ is not imported: as a tier it would add 31 words worth 0.078% of running text,
 disagrees with `harvested` a third source sides with harvested 37:18.
 
 **A benchmark that can sit beside a published number.** `scripts/benchmark.mjs`
-scores WER and CER on a **two-reference consensus set**: the 684 word types that
-Tungaamal and Inner Mongolia University's converter both answer and our lexicon
+scores WER and CER on a **two-silver consensus set**: the 684 word types that
+The silver and Inner Mongolia University's converter both answer and our lexicon
 does not contain. The two agree with each other on **604 (88.3%)**, and that
 consensus is the benchmark; the 80 contested types are excluded.
 
@@ -396,7 +520,7 @@ takes the whole set **21.36% → 15.40%**, token-WER 18.58% → 12.31%. The mode
 ships: ruled 2026-07-30, the model is never in the npm package.
 
 **Retracted:** rulebook §2.3.1 was misread earlier the same day as saying the
-pronoun case forms should be fused. Tungaamal attests them MVS-connected and the
+pronoun case forms should be fused. The silver attests them MVS-connected and the
 reader's бидэнд verdict confirms the detached `biden-dü`. Nothing shipped on it.
 The real defect there was the oblique stem (`čima`/`nama`, not `čam`), ~6,100
 tokens — queued for a reader verdict rather than guessed at, and answered on

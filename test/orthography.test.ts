@@ -82,7 +82,7 @@ describe('free variation selectors', () => {
     expect(cps(toScript('a4'))).toEqual([0x1820, 0x180f]);
   });
 
-  it('renders найм exactly as Tungaamal screenshot', () => {
+  it('renders найм exactly as the silver screenshot', () => {
     expect(cps(convert('найм'))).toEqual([0x1828, 0x1820, 0x1836, 0x180b, 0x182e, 0x1820]);
   });
 

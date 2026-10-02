@@ -1,0 +1,805 @@
+{
+  "_comment": "One worked example per row of src/data/tungaamal-rules.ts, GENERATED from the same measurement as the table — do not edit by hand. Each pair was shaped with HarfBuzz, the left side with a Tungaamal face and the right with Noto Sans Mongolian 3.002, and draws the same written forms (the forms field, in Noto glyph-name vocabulary). Code points are spelled U+XXXX so no invisible character is ever typed. source says whether the token is a real one from a public page or a synthetic probe.",
+  "entries": [
+    {
+      "id": "KE-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 5 times",
+      "tungaamal": "U+182E U+1827 U+1888 U+1820 U+1828 U+1822 U+1830 U+182E",
+      "unicode": "U+182E U+1827 U+182C U+180C U+1820 U+1828 U+1822 U+1830 U+182E",
+      "forms": "M.init W.medi G.medi A.medi N.medi I.medi S.medi M.fina"
+    },
+    {
+      "id": "KE-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 4 times",
+      "tungaamal": "U+1888",
+      "unicode": "U+182C U+180C",
+      "forms": "G.init"
+    },
+    {
+      "id": "KE-3",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+1888 U+1828",
+      "unicode": "U+1820 U+182C U+180C U+1828",
+      "forms": "A.init A.medi G.medi A.fina"
+    },
+    {
+      "id": "KE-0",
+      "kind": "encoding",
+      "source": "real token, seen 1163 times",
+      "tungaamal": "U+1834 U+1820 U+1888 U+1822 U+182E",
+      "unicode": "U+1834 U+1820 U+182C U+1822 U+182E",
+      "forms": "Ch.init A.medi G.medi I.medi M.fina"
+    },
+    {
+      "id": "GE-1",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+1889 U+1820",
+      "unicode": "U+182D U+180C U+1820",
+      "forms": "G.init A.fina"
+    },
+    {
+      "id": "GE-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 9 times",
+      "tungaamal": "U+1889",
+      "unicode": "U+182D U+180C",
+      "forms": "G.init"
+    },
+    {
+      "id": "GE-3",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 11 times",
+      "tungaamal": "U+182B U+1837 U+1823 U+1889 U+1837 U+1820 U+182E U+182E",
+      "unicode": "U+182B U+1837 U+1823 U+182D U+180C U+1837 U+1820 U+182E U+182E",
+      "forms": "P.init R.medi O.medi G.medi R.medi A.medi M.medi M.fina"
+    },
+    {
+      "id": "GE-MVS",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+182A U+1889 U+180E U+1820",
+      "unicode": "U+182A U+182D U+180C U+180E U+1820",
+      "forms": "B.init G.fina Aa.isol"
+    },
+    {
+      "id": "GE-0",
+      "kind": "encoding",
+      "source": "real token, seen 789 times",
+      "tungaamal": "U+182E U+1821 U+1833 U+1821 U+1889 U+1821 U+182F U+1821 U+182F",
+      "unicode": "U+182E U+1821 U+1833 U+1821 U+182D U+1821 U+182F U+1821 U+182F",
+      "forms": "M.init A.medi D.medi A.medi G.medi A.medi L.medi A.medi L.fina"
+    },
+    {
+      "id": "OU-KEGE",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+1888 U+1823",
+      "unicode": "U+182C U+180C U+1823 U+180C",
+      "forms": "G.init U.fina"
+    },
+    {
+      "id": "QA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 255 times",
+      "tungaamal": "U+1821 U+182C U+1822 U+182F U+1821 U+182F",
+      "unicode": "U+1821 U+182C U+180D U+1822 U+182F U+1821 U+182F",
+      "forms": "A.init H.medi I.medi L.medi A.medi L.fina"
+    },
+    {
+      "id": "QA-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 49 times",
+      "tungaamal": "U+182C U+183B",
+      "unicode": "U+182C U+180D U+183B",
+      "forms": "H.init K.fina"
+    },
+    {
+      "id": "GA-F1-medi-V",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+182D U+180B U+1820",
+      "unicode": "U+1820 U+182D U+180D U+1820",
+      "forms": "A.init A.medi H.medi A.fina"
+    },
+    {
+      "id": "GA-F1-medi-C",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+182D U+180B U+1828",
+      "unicode": "U+1820 U+182D U+180B U+1828",
+      "forms": "A.init A.medi Hx.medi A.fina"
+    },
+    {
+      "id": "GA-F1-fina",
+      "kind": "encoding",
+      "source": "real token, seen 2 times",
+      "tungaamal": "U+1823 U+1837 U+1827 U+1828 U+182A U+1824 U+1837 U+182D U+180B",
+      "unicode": "U+1823 U+1837 U+1827 U+1828 U+182A U+1824 U+1837 U+182D U+180D",
+      "forms": "A.init O.medi R.medi W.medi A.medi B.medi O.medi R.medi Hx.fina"
+    },
+    {
+      "id": "GA-F1-init-V",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+182D U+180B U+1820",
+      "unicode": "U+182D U+180B U+1820",
+      "forms": "H.init A.fina"
+    },
+    {
+      "id": "GA-F1-init-C",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+182D U+180B U+1828",
+      "unicode": "U+182D U+180D U+1828",
+      "forms": "Hx.init A.fina"
+    },
+    {
+      "id": "GA-F1-isol",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+182D U+180B",
+      "unicode": "U+182D U+180B",
+      "forms": "H.init"
+    },
+    {
+      "id": "GA-1i",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 4 times",
+      "tungaamal": "U+182C U+1826 U+1834 U+1826 U+1828 U+202F U+182D U+1826 U+1822",
+      "unicode": "U+182C U+180D U+1826 U+1834 U+1826 U+1828 U+180E U+182D U+180D U+1826 U+1822",
+      "forms": "H.init O.medi I.medi Ch.medi O.medi A.fina <nnbsp> Hx.init O.medi I.medi I.fina"
+    },
+    {
+      "id": "GA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 408 times",
+      "tungaamal": "U+1828 U+1821 U+182D U+1821 U+182D U+1821 U+182F U+1832 U+1821 U+1832 U+1821 U+1822",
+      "unicode": "U+1828 U+1821 U+182D U+180B U+1821 U+182D U+180B U+1821 U+182F U+1832 U+1821 U+1832 U+1821 U+1822",
+      "forms": "N.init A.medi Hx.medi A.medi Hx.medi A.medi L.medi D.medi A.medi D.medi A.medi I.fina"
+    },
+    {
+      "id": "GA-SD",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+1830 U+182D U+1820",
+      "unicode": "U+1830 U+182D U+180B U+1820",
+      "forms": "S.init Hx.medi A.fina"
+    },
+    {
+      "id": "GA-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 204 times",
+      "tungaamal": "U+1825 U+182D U+182D U+1825 U+182D U+1833 U+1821 U+182F",
+      "unicode": "U+1825 U+182D U+180D U+182D U+180B U+1825 U+182D U+180D U+1833 U+1821 U+182F",
+      "forms": "A.init O.medi I.medi H.medi Hx.medi O.medi H.medi D.medi A.medi L.fina"
+    },
+    {
+      "id": "GA-MVS",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+182A U+182D U+180E U+1821",
+      "unicode": "U+182A U+182D U+180D U+180E U+1821",
+      "forms": "B.init Hx.fina Aa.isol"
+    },
+    {
+      "id": "GA-3",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 32 times",
+      "tungaamal": "U+1820 U+1889 U+1827 U+1828 U+180B U+1832 U+180B U+182F U+1822 U+182D",
+      "unicode": "U+1820 U+182D U+1827 U+1828 U+180B U+1832 U+180B U+182F U+1822 U+182D U+180B",
+      "forms": "A.init A.medi G.medi W.medi N.medi T.medi L.medi I.medi H.fina"
+    },
+    {
+      "id": "GA-4",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 19 times",
+      "tungaamal": "U+182D U+200D",
+      "unicode": "U+182D U+180B U+200D",
+      "forms": "H.init"
+    },
+    {
+      "id": "NA-F1-medi-V",
+      "kind": "encoding",
+      "source": "real token, seen 4 times",
+      "tungaamal": "U+1822 U+1828 U+180B U+1832 U+180B U+1827 U+1837 U+1828 U+180B U+1827 U+1832",
+      "unicode": "U+1822 U+1828 U+180B U+1832 U+180B U+1827 U+1837 U+1828 U+180C U+1827 U+1832",
+      "forms": "A.init I.medi N.medi T.medi W.medi R.medi A.medi W.medi T.fina"
+    },
+    {
+      "id": "NA-F1-medi-C",
+      "kind": "encoding",
+      "source": "real token, seen 36 times",
+      "tungaamal": "U+1830 U+1832 U+180B U+1820 U+1828 U+180B U+1833 U+1820 U+1837 U+1832",
+      "unicode": "U+1830 U+1832 U+180B U+1820 U+1828 U+180B U+1833 U+1820 U+1837 U+1832",
+      "forms": "S.init T.medi A.medi N.medi D.medi A.medi R.medi T.fina"
+    },
+    {
+      "id": "NA-F1-fina",
+      "kind": "encoding",
+      "source": "real token, seen 40 times",
+      "tungaamal": "U+1822 U+1828 U+180B",
+      "unicode": "U+1822 U+1828 U+180B",
+      "forms": "A.init I.medi N.fina"
+    },
+    {
+      "id": "NA-F1-init-V",
+      "kind": "encoding",
+      "source": "real token, seen 7 times",
+      "tungaamal": "U+1828 U+180B U+1823 U+1838 U+1820 U+183C",
+      "unicode": "U+1828 U+180B U+1823 U+1838 U+1820 U+183C",
+      "forms": "A.init O.medi W.medi A.medi C.fina"
+    },
+    {
+      "id": "NA-F1-init-C",
+      "kind": "encoding",
+      "source": "real token, seen 1 times",
+      "tungaamal": "U+1828 U+180B U+200D",
+      "unicode": "U+1828 U+200D",
+      "forms": "N.init"
+    },
+    {
+      "id": "NA-F1-isol",
+      "kind": "encoding",
+      "source": "real token, seen 3 times",
+      "tungaamal": "U+1828 U+180B",
+      "unicode": "U+1828 U+180B",
+      "forms": "A.init"
+    },
+    {
+      "id": "NA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 14 times",
+      "tungaamal": "U+1828 U+182A U+182C U+180E U+1820",
+      "unicode": "U+1828 U+180B U+182A U+182C U+180E U+1820",
+      "forms": "A.init B.medi H.fina Aa.isol"
+    },
+    {
+      "id": "DA-F1-head-tooth",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+182A U+1820 U+1837 U+202F U+1833 U+180B U+1826 U+1837",
+      "unicode": "U+182A U+1820 U+1837 U+180E U+1833 U+180B U+1826 U+180B U+1837",
+      "forms": "B.init A.medi R.fina <nnbsp> D.init O.medi I.medi R.fina"
+    },
+    {
+      "id": "DA-F1-head",
+      "kind": "encoding",
+      "source": "real token, seen 33 times",
+      "tungaamal": "U+1888 U+1826 U+1837 U+1822 U+1836 U+1821 U+1828 U+202F U+1833 U+180B U+1826",
+      "unicode": "U+182C U+1826 U+1837 U+1822 U+1836 U+1821 U+1828 U+180E U+1833 U+1826",
+      "forms": "G.init O.medi I.medi R.medi I.medi Y.medi A.medi A.fina <nnbsp> D.init U.fina"
+    },
+    {
+      "id": "DA-F1-init",
+      "kind": "encoding",
+      "source": "real token, seen 1734 times",
+      "tungaamal": "U+1833 U+180B U+1824",
+      "unicode": "U+1833 U+180B U+1824 U+180C",
+      "forms": "D.init U.fina"
+    },
+    {
+      "id": "DA-F1-medi-V",
+      "kind": "encoding",
+      "source": "real token, seen 502 times",
+      "tungaamal": "U+1820 U+183B U+1820 U+1833 U+180B U+1827 U+182E U+1822",
+      "unicode": "U+1820 U+183B U+1820 U+1833 U+180C U+1827 U+182E U+1822",
+      "forms": "A.init A.medi K.medi A.medi Dd.medi W.medi M.medi I.fina"
+    },
+    {
+      "id": "DA-F1-medi-C",
+      "kind": "encoding",
+      "source": "real token, seen 9 times",
+      "tungaamal": "U+182A U+1824 U+1833 U+180B U+1833 U+180B U+183E U+1820",
+      "unicode": "U+182A U+1824 U+1833 U+180B U+1833 U+180B U+183E U+1820",
+      "forms": "B.init O.medi D.medi D.medi Hr.medi A.fina"
+    },
+    {
+      "id": "DA-F1-fina",
+      "kind": "encoding",
+      "source": "real token, seen 49 times",
+      "tungaamal": "U+1833 U+1821 U+1833 U+180B",
+      "unicode": "U+1833 U+1821 U+1833 U+180B",
+      "forms": "T.init A.medi D.fina"
+    },
+    {
+      "id": "DA-F1-isol",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1833 U+180B",
+      "unicode": "U+1833 U+180B",
+      "forms": "T.init"
+    },
+    {
+      "id": "DA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 8 times",
+      "tungaamal": "U+182C U+1820 U+1824 U+182F U+1822 U+202F U+1833 U+1824",
+      "unicode": "U+182C U+1820 U+1824 U+182F U+1822 U+180E U+1833 U+180C U+1824",
+      "forms": "H.init A.medi O.medi L.medi I.fina <nnbsp> T.init U.fina"
+    },
+    {
+      "id": "DA-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 3 times",
+      "tungaamal": "U+1833 U+1824",
+      "unicode": "U+1833 U+180C U+1824 U+180C",
+      "forms": "T.init U.fina"
+    },
+    {
+      "id": "TA-F1-medi",
+      "kind": "encoding",
+      "source": "real token, seen 979 times",
+      "tungaamal": "U+1830 U+1822 U+1830 U+1832 U+180B U+1827 U+182E",
+      "unicode": "U+1830 U+1822 U+1830 U+1832 U+180B U+1827 U+182E",
+      "forms": "S.init I.medi S.medi T.medi W.medi M.fina"
+    },
+    {
+      "id": "TA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 6 times",
+      "tungaamal": "U+1820 U+1826 U+1830 U+1832 U+1837 U+1820 U+182F U+1822",
+      "unicode": "U+1820 U+1826 U+1830 U+1832 U+180C U+1837 U+1820 U+182F U+1822",
+      "forms": "A.init A.medi O.medi S.medi D.medi R.medi A.medi L.medi I.fina"
+    },
+    {
+      "id": "YA-IY-head",
+      "kind": "encoding",
+      "source": "real token, seen 34 times",
+      "tungaamal": "U+1834 U+1822 U+1889 U+182F U+1821 U+182F U+202F U+1822 U+180B U+1836 U+1821 U+1837",
+      "unicode": "U+1834 U+1822 U+182D U+182F U+1821 U+182F U+180E U+1822 U+1836 U+1821 U+1837",
+      "forms": "Ch.init I.medi G.medi L.medi A.medi L.fina <nnbsp> I.init I.medi A.medi R.fina"
+    },
+    {
+      "id": "YA-IY",
+      "kind": "encoding",
+      "source": "real token, seen 835 times",
+      "tungaamal": "U+1822 U+180B U+1836 U+1820 U+1837",
+      "unicode": "U+1822 U+180B U+1836 U+180B U+1820 U+1837",
+      "forms": "I.init I.medi A.medi R.fina"
+    },
+    {
+      "id": "YA-DIPH-I",
+      "kind": "encoding",
+      "source": "real token, seen 25 times",
+      "tungaamal": "U+1830 U+1822 U+1836 U+1822 U+1833 U+182A U+1826 U+1837 U+1822",
+      "unicode": "U+1830 U+1822 U+1836 U+180B U+1822 U+1833 U+182A U+1826 U+1837 U+1822",
+      "forms": "S.init I.medi I.medi I.medi Dd.medi B.medi O.medi R.medi I.fina"
+    },
+    {
+      "id": "YA-DIPH",
+      "kind": "encoding",
+      "source": "real token, seen 932 times",
+      "tungaamal": "U+182A U+1820 U+1836 U+1822 U+1828 U+180E U+1820",
+      "unicode": "U+182A U+1820 U+1822 U+1828 U+180E U+1820",
+      "forms": "B.init A.medi I.medi I.medi N.fina Aa.isol"
+    },
+    {
+      "id": "YA-DIPH-C",
+      "kind": "encoding",
+      "source": "real token, seen 20 times",
+      "tungaamal": "U+1889 U+1836 U+1822 U+1822 U+1834 U+1821 U+1833 U+1888 U+1821 U+1888 U+1826",
+      "unicode": "U+182D U+1836 U+180B U+1822 U+1822 U+1834 U+1821 U+1833 U+182C U+1821 U+182C U+1826",
+      "forms": "G.init I.medi I.medi I.medi Ch.medi A.medi Dd.medi G.medi A.medi G.medi O.fina"
+    },
+    {
+      "id": "YA-I-FINA",
+      "kind": "encoding",
+      "source": "real token, seen 9 times",
+      "tungaamal": "U+1830 U+1820 U+1836 U+1822",
+      "unicode": "U+1830 U+1820 U+1836 U+180B U+1822",
+      "forms": "S.init A.medi I.medi I.fina"
+    },
+    {
+      "id": "YA-F1-medi-I",
+      "kind": "encoding",
+      "source": "real token, seen 36 times",
+      "tungaamal": "U+1830 U+1820 U+1836 U+180B U+1822",
+      "unicode": "U+1830 U+1820 U+1836 U+1822",
+      "forms": "S.init A.medi Y.medi I.fina"
+    },
+    {
+      "id": "YA-F1-medi-V",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+1836 U+180B U+1820",
+      "unicode": "U+1820 U+1836 U+180B U+1820",
+      "forms": "A.init A.medi I.medi A.fina"
+    },
+    {
+      "id": "YA-F2-medi-V",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+182E U+1820 U+1836 U+180C U+1820 U+1828",
+      "unicode": "U+182E U+1820 U+1836 U+180B U+1820 U+1828",
+      "forms": "M.init A.medi I.medi A.medi A.fina"
+    },
+    {
+      "id": "YA-F3-medi-V",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+182E U+1820 U+1836 U+180D U+1820 U+1828",
+      "unicode": "U+182E U+1820 U+1836 U+180B U+1820 U+1828",
+      "forms": "M.init A.medi I.medi A.medi A.fina"
+    },
+    {
+      "id": "YA-F1-medi-C",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+1836 U+180B U+1828",
+      "unicode": "U+1820 U+1836 U+1828",
+      "forms": "A.init A.medi Y.medi A.fina"
+    },
+    {
+      "id": "YA-F1-head",
+      "kind": "encoding",
+      "source": "real token, seen 50 times",
+      "tungaamal": "U+182A U+1820 U+1836 U+1822 U+182D U+1824 U+182F U+1824 U+182F U+182D U+180E U+1820 U+202F U+1836 U+180B U+1822 U+1828",
+      "unicode": "U+182A U+1820 U+1822 U+182D U+1824 U+182F U+1824 U+182F U+182D U+180E U+1820 U+180E U+1836 U+1822 U+1828",
+      "forms": "B.init A.medi I.medi I.medi Hx.medi O.medi L.medi O.medi L.medi Hx.fina Aa.isol <nnbsp> I.init I.medi A.fina"
+    },
+    {
+      "id": "YA-F1-init",
+      "kind": "encoding",
+      "source": "real token, seen 6260 times",
+      "tungaamal": "U+1836 U+180B U+1822 U+1828",
+      "unicode": "U+1836 U+180B U+1822 U+1828",
+      "forms": "I.init I.medi A.fina"
+    },
+    {
+      "id": "YA-F1-isol",
+      "kind": "no-equivalent",
+      "source": "real token, seen 1 times",
+      "tungaamal": "U+1836 U+180B",
+      "unicode": "U+1836 U+180B",
+      "forms": "I.init"
+    },
+    {
+      "id": "YA-YI",
+      "kind": "encoding",
+      "source": "real token, seen 15 times",
+      "tungaamal": "U+1836 U+1822",
+      "unicode": "U+1836 U+180B U+1822",
+      "forms": "I.init I.fina"
+    },
+    {
+      "id": "YA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 24 times",
+      "tungaamal": "U+182C U+1820 U+182F U+1832 U+1820 U+182E U+180E U+1820 U+202F U+1836 U+1822 U+1828",
+      "unicode": "U+182C U+1820 U+182F U+1832 U+1820 U+182E U+180E U+1820 U+180E U+1836 U+180C U+1822 U+1828",
+      "forms": "H.init A.medi L.medi D.medi A.medi M.fina Aa.isol <nnbsp> Y.init I.medi A.fina"
+    },
+    {
+      "id": "YA-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 6 times",
+      "tungaamal": "U+183B U+1820 U+183D U+1826 U+1836 U+1836 U+1823 U+1831 U+1822",
+      "unicode": "U+183B U+1820 U+183D U+1826 U+1836 U+180B U+1836 U+1823 U+1831 U+180C U+1822",
+      "forms": "K.init A.medi Z.medi O.medi I.medi Y.medi O.medi Sh.medi I.fina"
+    },
+    {
+      "id": "I-II",
+      "kind": "encoding",
+      "source": "real token, seen 7 times",
+      "tungaamal": "U+1821 U+182E U+1821 U+1889 U+1832 U+1821 U+1822 U+1822 U+1834 U+1826 U+1833",
+      "unicode": "U+1821 U+182E U+1821 U+182D U+1832 U+1821 U+1822 U+1834 U+1826 U+1833",
+      "forms": "A.init M.medi A.medi G.medi D.medi A.medi I.medi I.medi Ch.medi O.medi Dd.fina"
+    },
+    {
+      "id": "I-I-FINA",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+1822 U+1822",
+      "unicode": "U+1820 U+1822 U+180D U+1822",
+      "forms": "A.init A.medi I.medi I.fina"
+    },
+    {
+      "id": "I-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 635 times",
+      "tungaamal": "U+1826 U+1822 U+182F U+1821 U+1834 U+1822 U+182F U+1821 U+1889 U+1821",
+      "unicode": "U+1826 U+1822 U+180D U+182F U+1821 U+1834 U+1822 U+182F U+1821 U+182D U+1821",
+      "forms": "A.init O.medi I.medi I.medi L.medi A.medi Ch.medi I.medi L.medi A.medi G.medi Aa.fina"
+    },
+    {
+      "id": "I-F1-head",
+      "kind": "encoding",
+      "source": "real token, seen 34 times",
+      "tungaamal": "U+1834 U+1822 U+1889 U+182F U+1821 U+182F U+202F U+1822 U+180B U+1836 U+1821 U+1837",
+      "unicode": "U+1834 U+1822 U+182D U+182F U+1821 U+182F U+180E U+1822 U+1836 U+1821 U+1837",
+      "forms": "Ch.init I.medi G.medi L.medi A.medi L.fina <nnbsp> I.init I.medi A.medi R.fina"
+    },
+    {
+      "id": "I-F1",
+      "kind": "encoding",
+      "source": "real token, seen 2017 times",
+      "tungaamal": "U+1822 U+180B",
+      "unicode": "U+1822 U+180B",
+      "forms": "I.isol"
+    },
+    {
+      "id": "I-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 2 times",
+      "tungaamal": "U+1830 U+1822 U+1830 U+1832 U+180B U+1827 U+182E U+202F U+1822",
+      "unicode": "U+1830 U+1822 U+1830 U+1832 U+180B U+1827 U+182E U+180E U+1822 U+180D",
+      "forms": "S.init I.medi S.medi T.medi W.medi M.fina <nnbsp> A.init I.fina"
+    },
+    {
+      "id": "I-3",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 3 times",
+      "tungaamal": "U+182A U+1820 U+1836 U+1822 U+1833 U+1820 U+182F U+202F U+1822 U+1836 U+1820 U+1837",
+      "unicode": "U+182A U+1820 U+1822 U+1833 U+1820 U+182F U+180E U+1822 U+180C U+1836 U+1820 U+1837",
+      "forms": "B.init A.medi I.medi I.medi D.medi A.medi L.fina <nnbsp> A.init I.medi Y.medi A.medi R.fina"
+    },
+    {
+      "id": "A-F1-head",
+      "kind": "encoding",
+      "source": "real token, seen 9 times",
+      "tungaamal": "U+182C U+1823 U+1837 U+1822 U+1836 U+1820 U+1828 U+202F U+1820 U+180B U+1834 U+1820",
+      "unicode": "U+182C U+1823 U+1837 U+1822 U+1836 U+1820 U+1828 U+180E U+1820 U+1834 U+1820",
+      "forms": "H.init O.medi R.medi I.medi Y.medi A.medi A.fina <nnbsp> A.init Ch.medi A.fina"
+    },
+    {
+      "id": "A-F1-init",
+      "kind": "encoding",
+      "source": "real token, seen 800 times",
+      "tungaamal": "U+1820 U+180B U+1834 U+1820",
+      "unicode": "U+1820 U+180B U+1834 U+1820",
+      "forms": "A.init Ch.medi A.fina"
+    },
+    {
+      "id": "A-F1-isol",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+180B",
+      "unicode": "U+1820 U+180C",
+      "forms": "Aa.isol"
+    },
+    {
+      "id": "E-F1-isol",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1821 U+180B",
+      "unicode": "U+1821 U+180B",
+      "forms": "Aa.isol"
+    },
+    {
+      "id": "O-F1-fina",
+      "kind": "encoding",
+      "source": "real token, seen 23 times",
+      "tungaamal": "U+1820 U+1826 U+180B U+1832 U+180B U+1823 U+180B",
+      "unicode": "U+1820 U+1826 U+180B U+1832 U+180B U+1823 U+180B",
+      "forms": "A.init A.medi O.medi I.medi T.medi O.fina"
+    },
+    {
+      "id": "U-F1-head",
+      "kind": "encoding",
+      "source": "real token, seen 121 times",
+      "tungaamal": "U+1824 U+182F U+1824 U+1830 U+202F U+1824 U+180B U+1828",
+      "unicode": "U+1824 U+182F U+1824 U+1830 U+180E U+1824 U+1828",
+      "forms": "A.init O.medi L.medi O.medi S.fina <nnbsp> O.init A.fina"
+    },
+    {
+      "id": "U-F1",
+      "kind": "encoding",
+      "source": "real token, seen 6015 times",
+      "tungaamal": "U+1824 U+180B U+1828",
+      "unicode": "U+1824 U+180B U+1828",
+      "forms": "O.init A.fina"
+    },
+    {
+      "id": "U-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 204 times",
+      "tungaamal": "U+182C U+1820 U+182D U+1820 U+182D U+1834 U+1822 U+1833 U+202F U+1824 U+1828",
+      "unicode": "U+182C U+1820 U+182D U+1820 U+182D U+1834 U+1822 U+1833 U+180E U+1824 U+180C U+1828",
+      "forms": "H.init A.medi Hx.medi A.medi H.medi Ch.medi I.medi Dd.fina <nnbsp> A.init O.medi A.fina"
+    },
+    {
+      "id": "U-2",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 5 times",
+      "tungaamal": "U+1823 U+1828 U+202F U+1824",
+      "unicode": "U+1823 U+1828 U+180E U+1824 U+180D",
+      "forms": "A.init O.medi A.fina <nnbsp> A.init O.fina"
+    },
+    {
+      "id": "UE-F1-head",
+      "kind": "encoding",
+      "source": "real token, seen 44 times",
+      "tungaamal": "U+182E U+1821 U+1833 U+1821 U+1889 U+1821 U+182F U+1821 U+182F U+202F U+1826 U+180B U+1828",
+      "unicode": "U+182E U+1821 U+1833 U+1821 U+182D U+1821 U+182F U+1821 U+182F U+180E U+1826 U+1828",
+      "forms": "M.init A.medi D.medi A.medi G.medi A.medi L.medi A.medi L.fina <nnbsp> O.init A.fina"
+    },
+    {
+      "id": "UE-F1-init",
+      "kind": "encoding",
+      "source": "real token, seen 3382 times",
+      "tungaamal": "U+1826 U+180B U+1828",
+      "unicode": "U+1826 U+180B U+1828",
+      "forms": "O.init A.fina"
+    },
+    {
+      "id": "UE-F1-isol",
+      "kind": "encoding",
+      "source": "real token, seen 2085 times",
+      "tungaamal": "U+1826 U+180B",
+      "unicode": "U+1826 U+180C",
+      "forms": "U.isol"
+    },
+    {
+      "id": "UE-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 5 times",
+      "tungaamal": "U+182A U+1822 U+183D U+1822 U+1828 U+1827 U+1830 U+202F U+1826 U+1828",
+      "unicode": "U+182A U+1822 U+183D U+1822 U+1828 U+1827 U+1830 U+180E U+1826 U+180C U+1828",
+      "forms": "B.init I.medi Z.medi I.medi N.medi W.medi S.fina <nnbsp> A.init O.medi I.medi A.fina"
+    },
+    {
+      "id": "OEUE-F1-dparticle",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+182A U+1820 U+1837 U+202F U+1833 U+180B U+1826 U+180B U+1837",
+      "unicode": "U+182A U+1820 U+1837 U+180E U+1833 U+1826 U+1837",
+      "forms": "B.init A.medi R.fina <nnbsp> D.init O.medi R.fina"
+    },
+    {
+      "id": "OEUE-particle-tooth",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+182A U+1820 U+1837 U+202F U+1832 U+1826 U+1837",
+      "unicode": "U+182A U+1820 U+1837 U+180E U+1832 U+1826 U+180B U+1837",
+      "forms": "B.init A.medi R.fina <nnbsp> T.init O.medi I.medi R.fina"
+    },
+    {
+      "id": "OE-F1-fina",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+1825 U+180B",
+      "unicode": "U+1820 U+1825 U+180B",
+      "forms": "A.init A.medi Ue.fina"
+    },
+    {
+      "id": "OE-F1-medi-first",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1828 U+1825 U+180B U+1820",
+      "unicode": "U+1828 U+1825 U+180D U+1820",
+      "forms": "N.init O.medi A.fina"
+    },
+    {
+      "id": "OE-F1-medi",
+      "kind": "encoding",
+      "source": "real token, seen 4 times",
+      "tungaamal": "U+1832 U+1823 U+182D U+1832 U+1820 U+182C U+1824 U+1832 U+1825 U+180B U+1837 U+1826",
+      "unicode": "U+1832 U+1823 U+182D U+1832 U+1820 U+182C U+1824 U+1832 U+1825 U+180B U+1837 U+1826",
+      "forms": "T.init O.medi H.medi D.medi A.medi H.medi O.medi D.medi O.medi I.medi R.medi U.fina"
+    },
+    {
+      "id": "UE-F1-fina",
+      "kind": "encoding",
+      "source": "real token, seen 13 times",
+      "tungaamal": "U+182A U+1828 U+1830 U+1826 U+180B",
+      "unicode": "U+182A U+1828 U+1830 U+1826 U+180B",
+      "forms": "B.init A.medi S.medi Ue.fina"
+    },
+    {
+      "id": "UE-F1-medi-first",
+      "kind": "encoding",
+      "source": "real token, seen 256 times",
+      "tungaamal": "U+1828 U+1826 U+180B U+1889 U+1826 U+1833",
+      "unicode": "U+1828 U+1826 U+180D U+182D U+1826 U+1833",
+      "forms": "N.init O.medi G.medi O.medi Dd.fina"
+    },
+    {
+      "id": "UE-F1-medi",
+      "kind": "encoding",
+      "source": "real token, seen 38 times",
+      "tungaamal": "U+1820 U+1826 U+180B U+1833 U+1822 U+1832",
+      "unicode": "U+1820 U+1826 U+180B U+1833 U+1822 U+1832",
+      "forms": "A.init A.medi O.medi I.medi D.medi I.medi T.fina"
+    },
+    {
+      "id": "OEUE-CC",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 12 times",
+      "tungaamal": "U+1831 U+1831 U+1888 U+1826 U+1889",
+      "unicode": "U+1831 U+1831 U+182C U+1826 U+180D U+182D",
+      "forms": "Sh.init Sh.medi G.medi O.medi G.fina"
+    },
+    {
+      "id": "OEUE-FINA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 1402 times",
+      "tungaamal": "U+1833 U+180B U+1826",
+      "unicode": "U+1833 U+180B U+1826 U+180D",
+      "forms": "D.init U.fina"
+    },
+    {
+      "id": "OU-FINA-1",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 1734 times",
+      "tungaamal": "U+1833 U+180B U+1824",
+      "unicode": "U+1833 U+180B U+1824 U+180C",
+      "forms": "D.init U.fina"
+    },
+    {
+      "id": "BOW-UE-FINA",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 156 times",
+      "tungaamal": "U+1888 U+1826",
+      "unicode": "U+182C U+1826 U+180C",
+      "forms": "G.init O.fina"
+    },
+    {
+      "id": "BOW-OE-FINA",
+      "kind": "tungaamal-defect",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+182A U+1825",
+      "unicode": "U+1820 U+182A U+1825 U+180B",
+      "forms": "A.init A.medi B.medi Ue.fina"
+    },
+    {
+      "id": "GE-UE-FINA",
+      "kind": "tungaamal-defect",
+      "source": "real token, seen 36 times",
+      "tungaamal": "U+1821 U+1830 U+1821 U+1837 U+1889 U+1826",
+      "unicode": "U+1821 U+1830 U+1821 U+1837 U+182D U+1826 U+180B",
+      "forms": "A.init S.medi A.medi R.medi G.medi Ue.fina"
+    },
+    {
+      "id": "SHA-I",
+      "kind": "encoding",
+      "source": "real token, seen 24 times",
+      "tungaamal": "U+1820 U+182B U+182B U+182F U+1822 U+183B U+1827 U+1836 U+1822 U+1831 U+1822 U+1828 U+180B",
+      "unicode": "U+1820 U+182B U+182B U+182F U+1822 U+183B U+1827 U+1822 U+1831 U+180C U+1822 U+1828 U+180B",
+      "forms": "A.init A.medi P.medi P.medi L.medi I.medi K.medi W.medi I.medi I.medi Sh.medi I.medi N.fina"
+    },
+    {
+      "id": "JA-F1-isol",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1835 U+180B",
+      "unicode": "U+1835 U+180B",
+      "forms": "I.isol"
+    },
+    {
+      "id": "WA-F1-fina",
+      "kind": "encoding",
+      "source": "synthetic probe",
+      "tungaamal": "U+1820 U+1838 U+180B",
+      "unicode": "U+1820 U+1838 U+180B",
+      "forms": "A.init A.medi U.fina"
+    },
+    {
+      "id": "ZWJ-BOW",
+      "kind": "encoding",
+      "source": "real token, seen 10 times",
+      "tungaamal": "U+182A U+200D U+1820 U+200D",
+      "unicode": "U+182A U+1820 U+200D",
+      "forms": "B.init A.medi"
+    },
+    {
+      "id": "ZWJ-A",
+      "kind": "encoding",
+      "source": "real token, seen 1 times",
+      "tungaamal": "U+1820 U+182F U+1832 U+1820 U+1828 U+200D U+1823 U+1833 U+1824",
+      "unicode": "U+1820 U+182F U+1832 U+1820 U+1828 U+1823 U+180B U+1833 U+1824",
+      "forms": "A.init A.medi L.medi D.medi A.medi N.medi A.medi O.medi D.medi U.fina"
+    },
+    {
+      "id": "ZWJ-OE",
+      "kind": "encoding",
+      "source": "real token, seen 1 times",
+      "tungaamal": "U+1820 U+1828 U+1824 U+200D U+1826 U+1835 U+1822 U+1828",
+      "unicode": "U+1820 U+1828 U+1824 U+1826 U+180C U+1835 U+1822 U+1828",
+      "forms": "A.init A.medi N.medi O.medi A.medi O.medi I.medi J.medi I.medi A.fina"
+    }
+  ]
+}

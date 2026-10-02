@@ -1,3 +1,4 @@
+import { attachedSuffixCandidate, attachSuffixes } from './attached.js';
 import { splitClitics } from './clitics.js';
 import { buildCandidates } from './generate.js';
 import { attachParticles, particleCandidate } from './particles.js';
@@ -22,11 +23,22 @@ export {
   fromScript,
   isRomanizable,
   RomanizationError,
+  scriptToWords,
   toScript,
+  wordsToScript,
 } from './romanize.js';
 export { segment } from './segment.js';
 export { GUESS_PRIOR, guessStem, resolveStem, type StemMatch } from './stem.js';
 export { tokenize } from './tokenize.js';
+export {
+  detectTungaamal,
+  isTungaamal,
+  rewriteTungaamal,
+  type TungaamalDetection,
+  type TungaamalOptions,
+  type TungaamalRewrite,
+  tungaamalToUnicode,
+} from './tungaamal.js';
 export type * from './types.js';
 export { verbEnding } from './verb.js';
 export { parseVerb, type VerbParse, type VerbStem, verbStems } from './verb-stem.js';
@@ -43,11 +55,12 @@ const DEFAULT_MAX_CANDIDATES = 5;
  * as data, so a UI can offer the alternatives instead of silently guessing.
  */
 export function analyze(text: string, options: ConvertOptions = {}): AnalyzedToken[] {
-  // Both stages exist because Cyrillic and bichig disagree about where words
-  // end, in both directions. `splitClitics` pulls мэдэхгүй and монголруу apart;
-  // `attachParticles` glues "бодож ч" together with MVS. Split first: it can
-  // create the word a particle then attaches to.
-  const tokens = attachParticles(splitClitics(tokenize(text)));
+  // The three stages exist because Cyrillic and bichig disagree about where
+  // words end, in both directions. `splitClitics` pulls мэдэхгүй and монголруу
+  // apart; `attachParticles` glues "бодож ч" together with MVS; and
+  // `attachSuffixes` does the same for an ending Cyrillic hangs on a hyphen
+  // (2020-ны). Split first: it can create the word a particle then attaches to.
+  const tokens = attachSuffixes(attachParticles(splitClitics(tokenize(text))));
   const ranker = options.ranker ?? frequencyRanker;
   const maxCandidates = options.maxCandidates ?? DEFAULT_MAX_CANDIDATES;
   const validate = options.validate;
@@ -59,6 +72,11 @@ export function analyze(text: string, options: ConvertOptions = {}): AnalyzedTok
     // reading cannot be built from the token alone — see `particles.ts`.
     const particle = particleCandidate(tokens, index);
     if (particle !== undefined) return { token, candidates: [{ ...particle, confidence: 1 }] };
+
+    // …and a suffix hung on a hyphen is the other: its form depends on the
+    // number or abbreviation before it — see `attached.ts`.
+    const attached = attachedSuffixCandidate(tokens, index);
+    if (attached !== undefined) return { token, candidates: [{ ...attached, confidence: 1 }] };
 
     let candidates = buildCandidates(token.text);
     if (validate !== undefined) {

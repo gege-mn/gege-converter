@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { attestedIndex } from '../src/data/attested-forms.js';
 import { assemble } from '../src/generate.js';
 import { analyze } from '../src/index.js';
 import { toScript } from '../src/romanize.js';
@@ -21,10 +22,21 @@ import { segment } from '../src/segment.js';
  * the full breakdown.
  */
 
+/**
+ * This file measures what the pipeline can DERIVE, so the `attested` tier is
+ * emptied for it. Those rows are whole words from the same silver this gold
+ * came from; left live they would answer gold forms from memory — and, used as
+ * last-resort stems, would sit in the "known stem" denominator below as if
+ * they were dictionary stems. Vitest isolates modules per test file, so this
+ * touches nothing outside it. `scripts/lib/derivation.mjs` does the same for
+ * the scoring scripts and says why the rows are shipped rather than withheld.
+ */
+(attestedIndex as Map<string, readonly string[]>).clear();
+
 interface GoldEntry {
   cyrillic: string;
   classical: string;
-  /** Tungaamal wrote the suffix after a connector, so the chain is readable. */
+  /** the silver wrote the suffix after a connector, so the chain is readable. */
   detached: boolean;
 }
 
@@ -75,7 +87,7 @@ const goldStem = (classical: string): string => {
 const bestSegmented = (word: string) =>
   analyze(word)[0]?.candidates.find((c) => c.segmentation.suffixes.length > 0);
 
-describe('inflected forms vs Tungaamal gold', () => {
+describe('inflected forms vs silver', () => {
   it('has a gold set large enough to be meaningful', () => {
     expect(gold.length).toBeGreaterThan(800);
     expect(detached.length).toBeGreaterThan(400);
@@ -87,7 +99,7 @@ describe('inflected forms vs Tungaamal gold', () => {
     expect(harvestedLexicon.filter((e) => keys.has(e.cyrillic))).toEqual([]);
   });
 
-  it('reproduces Tungaamal top-1 on the detached gold set', () => {
+  it('reproduces silver top-1 on the detached gold set', () => {
     const hits = detached.filter((g) =>
       sameWord(bestSegmented(g.cyrillic)?.classical, g.classical),
     );
@@ -107,7 +119,7 @@ describe('inflected forms vs Tungaamal gold', () => {
    * for a few hours on 2026-08-10, when the залгаж reading was made the
    * default and this half went 0.0% → 66.7%. The reader then ruled (T1/T2)
    * that joined and detached are *both correct* — *"it's simply a choice. we
-   * chose to detach"* — so these rows record the reference converter's house
+   * chose to detach"* — so these rows record the silver's house
    * style, not a fact about Mongolian, and matching them is not accuracy.
    *
    * What is asserted instead is the thing that would be a real regression: the
@@ -155,7 +167,7 @@ describe('inflected forms vs Tungaamal gold', () => {
     expect(hit / seen).toBeGreaterThanOrEqual(0.7);
   });
 
-  it('reaches Tungaamal gold from a perfect stem far more often than from a guess', () => {
+  it('reaches silver from a perfect stem far more often than from a guess', () => {
     // Oracle: hand the generator the correct stem and let the segmenter and
     // suffix table do the rest. This isolates everything except stem lookup,
     // and it is the ceiling the guesser fails to approach.

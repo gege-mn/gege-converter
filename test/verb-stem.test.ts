@@ -9,8 +9,21 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { attestedIndex } from '../src/data/attested-forms.js';
 import { analyze, convert, parseVerb, verbStems, verbSuffixes } from '../src/index.js';
 import { toScript } from '../src/romanize.js';
+
+/**
+ * This file is about how a verb is DERIVED, so the `attested` tier is emptied
+ * for it, as it is in `inflected.test.ts` and for the same reason. Its rows
+ * are whole words — some of them infinitives, which `verb-stem.ts` reads live
+ * as stems — and which words those are changes with every silver set: the corpus
+ * has the misspelling учирах, and with that row present учирна has a stem one
+ * appended vowel away and the metathesis this file tests is never asked.
+ * `test/attested.test.ts` covers the tier's side of that hand-over. Vitest
+ * isolates modules per test file, so nothing outside this file sees it.
+ */
+(attestedIndex as Map<string, readonly string[]>).clear();
 
 describe('verb stems come from the dictionary, not a new table', () => {
   it('derives a useful number of stems', () => {
@@ -83,18 +96,49 @@ describe('every mined suffix row carries its evidence', () => {
   // nothing dominating over 42 forms. That was a statement about the *evidence*,
   // and it was correct: the mining could not separate them.
   //
-  // Rulebook 2.2.2/16 separates them by condition instead of by counting, so the
-  // rows now exist. What replaces the old assertion is the guard that makes them
-  // safe: every bare -ч row is restricted to a хатуу дэвсгэр, and the agentive
-  // (-аач⁴, ажиллаач) only ever follows a vowel, so no -ч row can reach it.
-  it('admits bare -ч only after a хатуу дэвсгэр, so it cannot swallow the agentive', () => {
+  // Rulebook 2.2.2/16 separated them by condition instead of by counting, and
+  // from then until 2026-10-02 this asserted that every bare -ч row was
+  // restricted to a хатуу дэвсгэр. That restriction was on the Classical stem,
+  // and it shut out the commonest case: Cyrillic writes ч after р and с
+  // whatever the Classical stem ends in, so амьдарч is `amidura` + `ǰu` — a
+  // vowel-final stem no `hard` row can take (45 of 48 such forms in the
+  // silver read `ǰu`).
+  //
+  // What separates the converb from the agentive is the **Cyrillic letter in
+  // front**, so that is what is asserted now: both stem classes have a row,
+  // and the guard is on the surface.
+  it('reads bare -ч as the converb after в/г/р/с, and as nothing after any other letter', () => {
     const bareCh = verbSuffixes.filter((r) => r.cyrillic === 'ч');
-    expect(bareCh.length).toBeGreaterThan(0);
-    for (const row of bareCh) {
-      expect(row.after, `${row.cyrillic} → ${row.classical}`).toBe('hard');
-      expect(row.kind).toBe('converb-imperfective');
+    expect(new Set(bareCh.map((r) => r.after))).toEqual(new Set(['hard', 'not-hard']));
+    for (const row of bareCh) expect(row.kind).toBe('converb-imperfective');
+
+    // хатуу дэвсгэр → ču/čü; anything else → ǰu/ǰü. The Cyrillic is ч in all.
+    expect(parseVerb('босч')?.classical).toBe('bosču');
+    expect(parseVerb('өгч')?.classical).toBe('ögčü');
+    expect(parseVerb('амьдарч')?.classical).toBe('amiduraǰu');
+    expect(parseVerb('хүсч')?.classical).toBe('qüseǰü');
+
+    // The agentive follows a vowel, л, м, н — never в/г/р/с on a verb stem.
+    // худалч is the one that needs the guard and not merely the stem index:
+    // худла- is an attested infinitive, so without it this is `qudalaǰu`.
+    expect(verbStems.has('худла')).toBe(true);
+    for (const noun of ['худалч', 'хаалгач', 'ажиллаач']) {
+      expect(parseVerb(noun), noun).toBeUndefined();
     }
-    expect(parseVerb('ажиллаач')).toBeUndefined();
+  });
+
+  it('gives a conditioned row the share of its own cell', () => {
+    // The four хатуу-дэвсгэр converb rows once carried the ču/čü share of
+    // *every* -ж or -ч form (0.02, 0.07, 0.21, 0.17). The ranker multiplies by
+    // `share`, so the right reading off a harvested stem scored 0.01 and lost
+    // to the guesser: жолоодож came out `ǰoluduǰi`. Nothing structural stops
+    // that happening again, so the consequence is what is pinned.
+    for (const row of verbSuffixes) {
+      if (row.kind !== 'converb-imperfective' || row.after !== 'hard') continue;
+      expect(row.share, `${row.cyrillic} → ${row.classical}`).toBeGreaterThan(0.5);
+    }
+    expect(convert('жолоодож')).toBe(toScript('ǰiluγudču'));
+    expect(convert('босч')).toBe(toScript('bosču'));
   });
 
   it('spells the perfective converb short, so the head lands on the stem', () => {
@@ -236,5 +280,282 @@ describe('the verb path is a fallback, not a preference', () => {
     expect(analyze('ахад')[0]?.candidates[0]?.classical).toBe('aq-a-du');
     expect(parseVerb('мод')?.classical).toBe('moγad');
     expect(analyze('мод')[0]?.candidates[0]?.classical).toBe('modu');
+  });
+});
+
+describe('the dictionary tier supplies verb stems too', () => {
+  // Until 2026-10-02 only curated and harvested infinitives fed the stem index,
+  // which left ~18,000 `toli` infinitives unused: the tier answered аагалах
+  // itself and then could not inflect it. 79 of the 91 verb-gold failures were
+  // exactly "the suffix row exists and the stem does not".
+  it('grows the index by an order of magnitude', () => {
+    expect(verbStems.size).toBeGreaterThan(15000);
+  });
+
+  it('inflects a verb only the dictionary tier lists', () => {
+    const parse = parseVerb('аагалсан');
+    expect(parse?.stem.provenance).toBe('toli');
+    expect(parse?.classical).toBe('aγalaγsan');
+  });
+
+  it('never lets a dictionary stem displace a harvested or curated one', () => {
+    // Weakest tier first into the index, so a stronger tier overwrites it.
+    expect(verbStems.get('нэрлэ')?.provenance).toBe('harvested');
+    expect(verbStems.get('нэрлэ')?.classical).toBe('nerele');
+  });
+
+  it('restores the vowel of the better-attested stem first', () => {
+    // ахад peels to ах, and two stems complete it: the dictionary's аха- and
+    // the harvested ахи- the reader ruled on. Vowel order alone picked аха-.
+    expect(verbStems.get('аха')?.provenance).toBe('toli');
+    expect(verbStems.get('ахи')?.provenance).toBe('harvested');
+    expect(parseVerb('ахад')?.classical).toBe('aqiγad');
+  });
+});
+
+describe('the soft sign of an и-final verb stem', () => {
+  it('reads ярьж and тавьсан off the stems ярих and тавих give', () => {
+    expect(parseVerb('ярьж')?.classical).toBe('yariǰu');
+    expect(parseVerb('тавьсан')?.classical).toBe('talbiγsan');
+    expect(convert('ярьж')).toBe(toScript('yariǰu'));
+  });
+
+  it('still requires the и-stem to be attested', () => {
+    // морь is a noun; there is no verb мори-, so nothing may be built on it.
+    expect(verbStems.has('мори')).toBe(false);
+    expect(parseVerb('морьж')).toBeUndefined();
+  });
+});
+
+/**
+ * The stem vowel that moves instead of dropping: нарийвчла + сан is written
+ * нарийвчилсан. Like `restoreStemVowel` it proposes and filters — the result
+ * is always an attested infinitive stem — and every limit asserted below is a
+ * measurement recorded on `restoreMetathesis`, not a taste.
+ */
+describe('restoreMetathesis', () => {
+  const parsed = (word: string) => toScript(parseVerb(word)?.classical ?? '');
+
+  it('recovers a -CCV stem from its -CVC surface', () => {
+    expect(parseVerb('нарийвчилсан')?.stem.cyrillic).toBe('нарийвчла');
+    expect(parsed('нарийвчилсан')).toBe(toScript('naribčilaγsan'));
+    expect(parsed('сурвалжилж')).toBe(toScript('surbulǰilaǰu'));
+    expect(parsed('чухалчилж')).toBe(toScript('čiqulačilaǰu'));
+    // Across р as well as л, and the vowel that returns need not be the one
+    // that left: учир- is учра-.
+    expect(parseVerb('учирна')?.stem.cyrillic).toBe('учра');
+    expect(parsed('учирна')).toBe(toScript('učaran-a'));
+  });
+
+  it('marks the parse as restored', () => {
+    expect(parseVerb('нарийвчилсан')?.restored).toBe(true);
+  });
+
+  it('only ever returns an attested infinitive', () => {
+    for (const word of ['нарийвчилсан', 'сурвалжилж', 'чухалчилж', 'учирна']) {
+      const stem = parseVerb(word)?.stem.cyrillic ?? '';
+      expect(verbStems.has(stem), word).toBe(true);
+    }
+    // The shape alone is not enough: no infinitive, no parse.
+    expect(parseVerb('зззилсан')).toBeUndefined();
+  });
+
+  it('yields to a stem that only needs its vowel appended', () => {
+    // тохир- completes both ways — тохиро- and тохро- are both infinitives —
+    // and over the silver set the appended stem was the silver's 25 times out
+    // of 25 where both existed.
+    expect(verbStems.has('тохро')).toBe(true);
+    expect(parseVerb('тохирсон')?.stem.cyrillic).toBe('тохиро');
+  });
+
+  it('does not take a long vowel for an inserted one', () => {
+    // буур- is буура-, not бура- with the у moved: 0 of 75 in the silver set.
+    expect(verbStems.has('бура')).toBe(true);
+    expect(parseVerb('буурсан')?.stem.cyrillic).toBe('буура');
+  });
+
+  it('does not cross х, where the head is an infinitive', () => {
+    // хэлэхэд is хэлэх + the dative. хэлхэ- is a real verb, and the perfective
+    // row would have made this `qelqiγed`.
+    expect(verbStems.has('хэлхэ')).toBe(true);
+    expect(parseVerb('хэлэхэд')).toBeUndefined();
+  });
+});
+
+describe('the evidential past -жээ / -чээ', () => {
+  const parsed = (word: string) => toScript(parseVerb(word)?.classical ?? '');
+
+  it('is ǰei after a vowel or a зөөлөн дэвсгэр, čei after a хатуу one', () => {
+    expect(parsed('болжээ')).toBe(toScript('bolǰei'));
+    expect(parsed('үзүүлжээ')).toBe(toScript('üǰeγülǰei'));
+    expect(parsed('шийджээ')).toBe(toScript('siidčei'));
+  });
+
+  it('reads the Classical stem, not the Cyrillic letter', () => {
+    // -чээ on a vowel-final Classical stem is still ǰei; -жээ on a хатуу
+    // дэвсгэр is still čei (шийджээ above).
+    expect(parsed('зөвшөөрчээ')).toBe(toScript('ǰöbsiyereǰei'));
+    expect(parsed('гарчээ')).toBe(toScript('γarčei'));
+  });
+
+  it('does not let a weaker stem stand in for the one that fits the next row', () => {
+    // гар- restores to the harvested гара- `γar` and to the dictionary's гари-.
+    // The `not-hard` row comes first and гара- does not fit it; taking гари-
+    // there instead gave `γariǰei`.
+    expect(parseVerb('гарчээ')?.stem.cyrillic).toBe('гара');
+  });
+
+  it('writes one form for both harmonies', () => {
+    for (const row of verbSuffixes.filter((r) => r.kind === 'evidential')) {
+      expect(row.harmony, row.cyrillic).toBeUndefined();
+      expect(row.after, row.cyrillic).toBeDefined();
+    }
+  });
+});
+
+describe('the modal converb -н', () => {
+  const parsed = (word: string) => toScript(parseVerb(word)?.classical ?? '');
+
+  it('adds NA to a vowel-final stem and links a consonant-final one', () => {
+    expect(parsed('үйлдвэрлэн')).toBe(toScript('üiledbürilen'));
+    expect(parsed('үзүүлэн')).toBe(toScript('üǰeγülün'));
+    expect(convert('үйлдвэрлэн')).toBe(toScript('üiledbürilen'));
+  });
+
+  it('follows a vowel, and never й', () => {
+    // After й it is the genitive: over the words the row first changed, 8 of
+    // 10 were wrong there. жирий- is an attested infinitive, so only the guard
+    // keeps this from being read as a converb.
+    expect(verbStems.has('жирий')).toBe(true);
+    expect(parseVerb('жирийн')).toBeUndefined();
+    // And a consonant before it is an abbreviation, not a stem with its vowel
+    // dropped: мн is not мо- + н.
+    expect(parseVerb('мн')).toBeUndefined();
+  });
+
+  it('leaves a noun the dictionary knows alone', () => {
+    // Bare -н is how a great many nouns end, and some of them are a verb stem
+    // plus н by accident: олон is not оло- + н, дүүрэн and хүрэн are `ng`
+    // nouns. All three really do produce a verb parse, so the guard is not
+    // vacuous — and all three must lose, because the verb path is consulted
+    // only when no curated or harvested reading exists. That ordering is what
+    // keeps the collision that reaches the output to 4 words in 174.
+    const nouns: Array<[string, string, string]> = [
+      ['олон', 'olun', 'olan'],
+      ['дүүрэн', 'düγürün', 'düγüreng'],
+      ['хүрэн', 'qürün', 'qüreng'],
+    ];
+    for (const [noun, asVerb, asNoun] of nouns) {
+      expect(parseVerb(noun)?.classical, noun).toBe(asVerb);
+      expect(convert(noun), noun).toBe(toScript(asNoun));
+    }
+  });
+});
+
+describe('harmony of an ending Cyrillic spells one way', () => {
+  it('follows the Classical stem, not the first vowel of the word', () => {
+    // нүүрлэ- is feminine in Cyrillic and masculine in Classical (`niγurla`),
+    // and -ж does not show which the writer meant. Where the two readings
+    // disagree in the silver set, the stem's last vowel is the silver's 9
+    // times in 11 and the word's first vowel 2.
+    expect(parseVerb('нүүрлэж')?.classical).toBe('niγurlaǰu');
+    expect(parseVerb('заналхийлж')?.classical).toBe('ǰanulqileǰü');
+  });
+
+  it('still follows the word where the Cyrillic already shows the harmony', () => {
+    // -сэн is spelled feminine, so the feminine row is the only candidate.
+    expect(parseVerb('нүүрлэсэн')?.suffix.cyrillic).toBe('сэн');
+  });
+});
+
+describe('an и-final stem after ж, ч, ш', () => {
+  it('puts back the и a long-vowel ending absorbed', () => {
+    // бичи + ээд is бичээд; peeling `эд` leaves бичэ, which is no stem.
+    expect(parseVerb('бичээд')?.stem.cyrillic).toBe('бичи');
+    expect(toScript(parseVerb('бичээд')?.classical ?? '')).toBe(toScript('bičiγed'));
+    expect(parseVerb('очоод')?.classical).toBe('očiγad');
+    expect(parseVerb('уншаад')?.classical).toBe('ungsiγad');
+    expect(parseVerb('бичээд')?.restored).toBe(true);
+  });
+
+  it('leaves the и alone where Cyrillic writes it', () => {
+    expect(parseVerb('яриад')?.restored).toBeFalsy();
+  });
+});
+
+describe('endings added from the running-text silver set, 2026-10-02', () => {
+  const parsed = (word: string) => toScript(parseVerb(word)?.classical ?? '');
+
+  it('reads the perfective converb after a long vowel through its г', () => {
+    expect(parsed('суугаад')).toBe(toScript('saγuγad'));
+    expect(parsed('тогтоогоод')).toBe(toScript('toγtaγaγad'));
+    // After a consonant those letters are a stem that ends in г: хийлгэ- + ээд,
+    // not хийл- + гээд.
+    expect(parseVerb('хийлгээд')?.stem.cyrillic).toBe('хийлгэ');
+  });
+
+  it('writes the conditional `bal`/`bel` however Cyrillic spells it', () => {
+    expect(parsed('бодвол')).toBe(toScript('bodubal'));
+    expect(parsed('тодруулбал')).toBe(toScript('toduraγulbal'));
+    expect(parsed('хэлбэл')).toBe(toScript('kelebel'));
+    // The linking vowel after б only, as on the -в past.
+    expect(parsed('авбал')).toBe(toScript('abubal'));
+  });
+
+  it('writes the completive -чих- flat, in the combinations attested', () => {
+    expect(parsed('явчихсан')).toBe(toScript('yabučiqaγsan'));
+    // No linking vowel, though `ab` is consonant-final and -сан alone takes one.
+    expect(parsed('авчихсан')).toBe(toScript('abčiqaγsan'));
+    expect(parsed('гарчихаад')).toBe(toScript('γarčiqaγad'));
+    // Not a rule that -чих- may precede anything: an unattested pair is refused.
+    expect(parseVerb('явчихтал')).toBeUndefined();
+  });
+
+  it('reads the durative converb as the participle plus the instrumental', () => {
+    expect(parsed('явсаар')).toBe(toScript('yabuγsaγar'));
+    expect(parsed('гарсаар')).toBe(toScript('γaruγsaγar'));
+    expect(parsed('үзүүлсээр')).toBe(toScript('üǰeγülüγseγer'));
+  });
+
+  it('reads the voluntative with its chachlag', () => {
+    expect(parsed('байя')).toBe(toScript('baiy-a'));
+    expect(parsed('үзье')).toBe(toScript('üǰey-e'));
+    expect(parsed('авъя')).toBe(toScript('abuy-a'));
+    // A bare е after a consonant is not this ending — it was `de` and `ne`.
+    expect(parseVerb('де')).toBeUndefined();
+  });
+
+  it('reads the polite imperative', () => {
+    expect(parsed('яваарай')).toBe(toScript('yabuγarai'));
+    expect(parsed('болоорой')).toBe(toScript('boluγarai'));
+    expect(parsed('үзээрэй')).toBe(toScript('üǰeγerei'));
+  });
+});
+
+describe('a final -н on a whole word is the word’s own', () => {
+  it('reads the modal converb instead of a noun with its н taken off', () => {
+    // сал "raft" is a harvested noun, and салан minus a "linking н" is that
+    // noun — but nothing follows for the н to link. The verb reading is what
+    // the silver writes for all three.
+    expect(convert('салан')).toBe(toScript('salun'));
+    expect(convert('хууран')).toBe(toScript('qaγurun'));
+    expect(convert('өргөжүүлэн')).toBe(toScript('örγeǰiγülün'));
+  });
+
+  it('still drops the linking н under a suffix', () => {
+    // The reader's ruling this path exists for.
+    expect(convert('хэлэнд')).toBe(toScript('kele-dü'));
+  });
+});
+
+describe('a parse on a real stem outranks an earlier row on a dictionary one', () => {
+  it('reads тэнсэн on the harvested тэнсэ-, not on a dictionary тэн- + -сэн', () => {
+    // Rows are tried longest ending first, so -сэн met the word before -н did
+    // and found a `toli` stem under it. The weak tier may answer only where
+    // nothing better reads the word.
+    const parse = parseVerb('тэнсэн');
+    expect(parse?.stem.provenance).not.toBe('toli');
+    expect(parse?.suffix.cyrillic).toBe('н');
+    expect(parse?.classical).toBe('tengsen');
   });
 });

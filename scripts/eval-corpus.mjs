@@ -18,7 +18,7 @@
  * `harvested` 76.7%, but `guess` scores 17.3% while carrying 25.8% of all
  * running text. That is where the loss is, and no type-list fixture shows it.
  *
- * ⚠ THE REFERENCE IS SILVER, NOT GOLD. The bichig side is one converter's bulk
+ * ⚠ THIS SET IS SILVER, NOT GOLD. The bichig side is one converter's bulk
  * output (Inner Mongolia University's online tool), following Inner Mongolian
  * convention and predating the 2026 rulebook. It is the same trust tier as
  * `harvested`. Do not read a disagreement as an error — read it as a question,
@@ -28,8 +28,8 @@
  * Two differences are DELIBERATE and are folded away before scoring, or they
  * would drown everything else:
  *
- *   1. the suffix connector — the reference writes legacy NNBSP, we write MVS;
- *   2. the medial i-diphthong — the reference writes Classical V+y+i (sayin),
+ *   1. the suffix connector — the silver writes legacy NNBSP, we write MVS;
+ *   2. the medial i-diphthong — the silver writes Classical V+y+i (sayin),
  *      we write V+i per UTN #57, ruled 2026-07-26. That difference alone is
  *      808 word types and 6.26% of all running text.
  *
@@ -88,7 +88,7 @@ const rows = [...counts.entries()]
   .map(([cy, r]) => ({
     cy,
     n: r.n,
-    // The reference's own majority reading. Where it is not unanimous the
+    // The silver's own majority reading. Where it is not unanimous the
     // minority is usually its own inconsistency, not real ambiguity.
     ref: [...r.forms.entries()].sort((a, b) => b[1] - a[1])[0][0],
     unanimous: r.forms.size === 1,
@@ -131,7 +131,7 @@ for (const r of rows) {
 const pct = (a, b) => (b === 0 ? '   n/a' : `${((100 * a) / b).toFixed(1)}%`.padStart(6));
 
 console.log(`corpus: ${rows.length} types, ${rows.reduce((s, r) => s + r.n, 0)} tokens`);
-console.log(`reference is unanimous on ${rows.filter((r) => r.unanimous).length} types\n`);
+console.log(`silver is unanimous on ${rows.filter((r) => r.unanimous).length} types\n`);
 console.log(`                    type          token`);
 console.log(
   `  OVERALL       ${pct(tally.type, tally.typeN)} ${pct(tally.token, tally.tokenN)}   ${tally.typeN} types / ${tally.tokenN} tokens`,

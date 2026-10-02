@@ -58,7 +58,7 @@ describe('lexicon', () => {
   });
 
   it('gives every entry a gloss and a positive frequency', () => {
-    // `gloss` is optional on the type because harvested Tungaamal rows genuinely
+    // `gloss` is optional on the type because silver rows genuinely
     // carry no sense information. It is still mandatory here: a hand-curated
     // entry without a gloss is an entry nobody can review.
     for (const entry of lexicon) {
@@ -141,7 +141,7 @@ describe('verb gold set', () => {
     for (const entry of verbGold.entries) {
       for (const ch of entry.script) {
         // A space is legal here and nowhere else in the data files: the
-        // reference converter renders some single Cyrillic words as two words
+        // silver data renders some single Cyrillic words as two words
         // (байхгүй is `abu üγei`), which romanization cannot express at all.
         if (ch === ' ') continue;
         expect(isAllowed(ch.codePointAt(0) ?? 0), `${entry.cyrillic}: ${ch}`).toBe(true);

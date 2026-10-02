@@ -101,7 +101,7 @@ as the warning in `data-and-accuracy.md` says.)
 
 The first run scored 49.6% and failed **all three** of the bichig reader's
 rulings — монгол as ᠮᠣᠩᠭᠣᠯ, сайн as `sayin`, найм without its FVS1. Those are
-precisely Tungaamal's three documented errors.
+precisely the silver's three documented errors.
 
 The model was faithful; the export was wrong. `.tmp/harvest-harvest.jsonl`'s
 `unicode` field is gege-linter's **encoding** repair only — the orthographic
@@ -110,7 +110,7 @@ before harvested rows enter the lexicon and which the export had skipped. 7/7
 монгол rows and 35/35 сай rows carried the old convention.
 
 Applying it moved gold **49.6% → 54.8%** and fixed монгол and сайн. найм still
-fails, correctly: the ruling *adds* YA+FVS1 where Tungaamal writes a bare I, so
+fails, correctly: the ruling *adds* YA+FVS1 where the silver writes a bare I, so
 no mechanical rule can derive it. It is lexical, which is what the `lexicon`
 tier is for.
 
@@ -225,8 +225,8 @@ The artifacts live on the Mac mini at `~/gege-train/model-v3/` — the box is
 
 ### Confirmed on an independent set, with the literature's metrics
 
-The run above scores against gold, which is Tungaamal-derived. `benchmark.mjs`
-now scores the same checkpoint on the two-reference consensus set —
+The run above scores against gold, which is silver-derived. `benchmark.mjs`
+now scores the same checkpoint on the two-silver consensus set —
 `--dump-words` to export the types, `--model` to read `convert.py`'s TSV back:
 
 | system | types | WER | CER |
@@ -243,7 +243,7 @@ closes most of it. Whole-set WER goes 22.02% → 15.40%, a 30% relative reductio
 token-weighted, 21.51% → 12.31%, because the guessed slice is frequency-heavy.
 
 The leak argument and the one thing it does *not* control for (the model was
-trained on Tungaamal's output and half the reference is Tungaamal) are in
+trained on the silver's output and half the silver is the silver) are in
 `data-and-accuracy.md`. Read them before quoting either number.
 
 **The model alone is 21.52% — barely better than the pipeline's 22.02%.** Only
@@ -448,7 +448,7 @@ model and the same ceiling.
 ⚠ **This reopens the "where does the model sit" question, and does not settle
 it.** v5 now beats the pipeline on gold's `harvested` tier by a wide margin
 (75.8% against 68.4%) and overall (72.7% against 63.2%), which reads as a clear
-promote. §7 item 2 records that the *same* comparison on the two-reference
+promote. §7 item 2 records that the *same* comparison on the two-silver
 benchmark ranked them oppositely in 2026-07-31, and that benchmark has not been
 re-run against v5. **Do not promote the model above `harvested` on the gold
 reading alone** — that is exactly the mistake §7 already documents. Re-run
@@ -524,9 +524,9 @@ over 450,860 tokens of real Cyrillic|bichig running text, verb-rich, which is
 1.5× the entire existing training set and addresses the exact hole §1c names.
 **It was measured and rejected.** Do not re-derive this.
 
-The test: on the 684 types Tungaamal and IMU both answer, transform the IMU side
-into our convention and count **exact** matches against the Tungaamal side —
-Tungaamal being the convention the harvest already carries.
+The test: on the 684 types the silver and IMU both answer, transform the IMU side
+into our convention and count **exact** matches against the silver side —
+The silver being the convention the silver set already carries.
 
 | transform applied to the IMU side | exact match |
 |---|---|
@@ -560,7 +560,7 @@ those forms have no connector precisely because **IMU fuses where we detach** �
 for us. Selecting on "no connector" does not filter the convention difference
 out, it filters *for* it. Any similar filter will have the same shape.
 
-The corpus keeps its real job: it is half of the two-reference benchmark, and it
+The corpus keeps its real job: it is half of the two-silver benchmark, and it
 is the only token-weighted denominator this project has. Both of those depend on
 it staying **out** of training.
 
@@ -632,7 +632,7 @@ the root cause of the verb hole: not that verbs are hard, but that there was
 never any verb signal in the data.
 
 `scripts/align-sentences.mjs` extracts them. Alignment cannot be naive — the
-reference converter does not preserve token count, and a merge (миний л → one
+silver data does not preserve token count, and a merge (миний л → one
 token) shifts every later token with no error. Worse, a merge and a split in
 the same sentence leave the counts equal, so a length check does not catch it.
 Naive positional alignment agrees with the word harvest only **83.4%** of the
@@ -781,7 +781,7 @@ harvest rows — **5% of the corpus, lost to notation, not to bad data**:
 | Missing | Rows |
 |---|---|
 | U+0020 space — multi-word forms, аавгүй is `abu üγei` | 1,038 |
-| U+183B ᠻ KA — Tungaamal writes кино as ᠻᠢᠨᠣ᠋ | 521 |
+| U+183B ᠻ KA — the silver writes кино as ᠻᠢᠨᠣ᠋ | 521 |
 | U+183E ᠾ HAA | 57 |
 | U+1806, U+180A | 16 |
 | U+183A ᠺ, U+183F ᠿ, U+1840 ᡀ | 5 |
@@ -915,7 +915,7 @@ dictionaries reach. The model takes the 26.8% that currently scores 4.1%, and
 Two seams already exist and neither needs new architecture:
 
 - **`Ranker`** (stage 7) — the documented statistical seam. The homograph work
-  already produced labelled data for it: Tungaamal's choice across 4,000
+  already produced labelled data for it: the silver's choice across 4,000
   sentences, for words where the two readings share no substring.
 - **`ConvertOptions.validate`** (stage 8) — the injected `lint` hook. Point it
   at gege-linter and malformed model output is rejected by the same gate that
@@ -930,9 +930,9 @@ the same way `guess` is scored separately now.
 
 ## 6. Risks
 
-**The harvest inherits the reference converter's errors.** This is the real
+**The silver set inherits the silver's errors.** This is the real
 one. `data-and-accuracy.md` already warns that "correct" means agreeing with
-Tungaamal, not with a bichig reader, and that the true figure is unknown and
+The silver, not with a bichig reader, and that the true figure is unknown and
 probably lower. A model trained on 31k harvested pairs will reproduce those
 disagreements faithfully and with confidence, and unlike a data row you cannot
 edit one out. Mitigations, in order of importance:
@@ -999,7 +999,7 @@ follows them is now the live list.
 
    **Measured 2026-07-31, and the answer is "not yet" — see
    `data-and-accuracy.md`.** v3 does pull ahead on gold's `harvested` tier,
-   71.4% against 64.6%, which reads as a clear promote. On the two-reference
+   71.4% against 64.6%, which reads as a clear promote. On the two-silver
    benchmark's data-backed slice the same two go the other way, 19.96% WER for
    the model against the pipeline's 13.62%. The two sets rank them oppositely
    because they are different populations folded differently, and neither is

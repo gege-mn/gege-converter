@@ -5,8 +5,8 @@
  * ## Why this is a different kind of data from everything else here
  *
  * Every other source of truth in this project is either another converter or a
- * lemma list, and both distort in known ways. The harvest is Tungaamal output —
- * a real converter that disagrees with this project on documented points. The
+ * lemma list, and both distort in known ways. The silver set is silver data —
+ * silver that disagrees with this project on documented points. The
  * 1,884-form inflected gold is built from a **lemma dictionary**, and that bias
  * is measurable rather than theoretical: 273 of its rows are the attached
  * -тай³ class and score 0.0%, because the only -тай words a lemma list carries

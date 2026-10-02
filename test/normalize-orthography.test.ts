@@ -20,7 +20,7 @@ const cps = (s: string): number[] => [...s].map((c) => c.codePointAt(0) ?? -1);
 
 describe('dropGlideYa', () => {
   it('reproduces the reader-supplied байгууллага exactly', () => {
-    // Tungaamal gave ᠪᠠᠶᠢᠭᠤᠯᠤᠯᠭ<MVS>ᠠ; the correct form has a single I, no YA glide.
+    // The silver gave ᠪᠠᠶᠢᠭᠤᠯᠤᠯᠭ<MVS>ᠠ; the correct form has a single I, no YA glide.
     const imported = 'ᠪᠠᠶᠢᠭᠤᠯᠤᠯᠭ\u180Eᠠ';
     const expected = 'ᠪᠠᠢᠭᠤᠯᠤᠯᠭ\u180Eᠠ';
     expect(cps(dropGlideYa(imported))).toEqual(cps(expected));
@@ -135,7 +135,7 @@ describe('foldNonInitialO and long vowels', () => {
 describe('attachDetachedSuffix', () => {
   const SP = ' ';
   const FVS1 = String.fromCodePoint(0x180b);
-  /** ᠬᠠᠭᠠᠨ, the stem Tungaamal writes before a detached genitive. */
+  /** ᠬᠠᠭᠠᠨ, the stem the silver writes before a detached genitive. */
   const QAGAN = String.fromCodePoint(0x182c, 0x1820, 0x182d, 0x1820, 0x1828);
 
   it('attaches the detached masculine genitive, dropping the isolate FVS', () => {

@@ -14,7 +14,7 @@
  *
  * There is no canonical answer to convert *to*. UTN #57 §2.2.3 defers every
  * number and punctuation specification to a future version, and Poppe §86
- * records that Classical punctuation was "used at random". The reference
+ * records that Classical punctuation was "used at random". The silver
  * charts note that the Mongolian digits U+1810–1819 are "less used now" and
  * that ASCII digits are common in modern Mongolian text. Emitting U+1810–1819
  * by default would be inventing a convention, so `'ascii'` is the default and

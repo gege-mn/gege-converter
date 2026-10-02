@@ -5,6 +5,100 @@
 Read this when choosing what to work on. Ordered by measured value, not by
 appeal.
 
+## ⭐ Where to pick up next — 2026-10-02, after the running-text silver set
+
+**This section is the current one.** The sections below it are still true about
+the DERIVATION — the gold fixtures, scored with the `attested` tier emptied —
+and are no longer the whole picture, because most common words no longer go
+through the derivation at all.
+
+Anchor numbers, each from its own command on the working tree of 2026-10-02:
+words agreeing with the silver in 2,000 held-out sentences
+**94.6%** (`node scripts/eval-sentences.mjs`); sentences agreeing in
+every word **58.4%**; held-out words built from a stem
+**75.0% by token, 56.6% by type** (`node scripts/eval-heldout.mjs`, the `derived` row);
+whole gold fixture **64.7%** (`node scripts/eval.mjs`).
+
+### Ask the reader — what is still open
+
+Answered at the end of 2026-10-02 and waiting to be DONE, not asked again:
+
+- **The foreign х.** "there's multiple type of х, and i think we've neglected
+  the foreign х" — so ᠾ (and ᡀ) go into the romanization in mongol-bichig,
+  and the 3,127 rows that fail the round trip are re-imported. Question 8
+  below is this.
+- **Abbreviations: do what the Tungaamal convention does.** "idk, check" it — so
+  letter names, each syllable held by a joiner with ᠂ after it, unless a
+  reader says otherwise. Question 2 below.
+- **тав is `tabu`**, done. The other numerals were not answered.
+- **The plural after н** still needs an example the owner can SEE, drawn —
+  орнууд both ways on a page, not in romanization.
+
+Answered on 2026-10-02 and no longer here: нэг is `nige`; үнэт is `ünetü`; a
+suffix after a number or abbreviation is written as on the word it stands
+for; -гүй + case; юмуу as two words.
+
+1. **The plural after н.** мэргэжилтнүүд was ruled `merγeǰilten-üd`. The
+   silver writes `-nuγud` — 660 words in the silver set — and the importer
+   keeps ours for every one of them on that single verdict (`RULED`,
+   `plural-after-n`). Asked on 2026-10-02 the answer was "not sure, give me an
+   example"; the example to show is орнууд — ours `orun-ud`, the silver's
+   `orun-nuγud`.
+2. **How an abbreviation is written.** ХХК, УИХ, НҮБ. The letter names are
+   right (reader, 2026-10-02: "хи ха ко"). Not settled: how the syllables are
+   joined. The silver uses ZWJ + ᠂ after each, a Tungaamal device.
+3. **The connector after a number.** Implemented as MVS, on the owner's "as if
+   the word was written" — an assumption the owner called one. A reader should
+   see `2020` + MVS + `u` drawn.
+4. **What гэдэс жийрэглэх does to the letters.** Implemented from the
+   silver: a fused suffix on a chachlag stem loses the connector (гавьяат
+   `γabiyatu`) — 231 of 231 in the silver set. Asked: "not sure".
+5. **The other bare numerals and н-words** — мянга, гурав, ам, нар are curated
+   with н, the silver writes none, and нэг has just gone the silver's
+   way. тав is `tabun` by an earlier ruling.
+6. **Foreign words: у, ү, ө take the shilbe, о does not** (reader,
+   2026-10-02, on паул). A rule for the guesser — but only once something can
+   tell a foreign word from a native one.
+7. **A compound name's second half keeps its о** (баасандорж, батзориг: "дорж
+   doesn't have to follow the о → у rule"). We fold it, as the normaliser does
+   to the silver's own answer; the two look identical. Left as it is.
+
+8. **Two letters the romanization cannot write.** ᠾ (U+183E) and ᡀ (U+1840)
+   have no symbol in mongol-bichig's alphabet, so христ, будда, лхагва and
+   1,600 other words the silver spells with them can be neither a data row
+   nor a test — 3,127 silver rows fail the round trip, about 160,000 corpus
+   tokens. A reader marked four of them "The silver is right" on
+   2026-10-02. This is a change in mongol-bichig, then a re-import here.
+9. **зургаа is `ǰirγuγ-a` and нэг is `nige`** — both bare, both ruled
+   2026-10-02 — while тав is `tabun` by an older ruling. Ask which the other
+   numerals follow.
+
+Two smaller ones from the Tungaamal study: whether ᠱ before ᠢ keeps its dots
+in a native word (SHA-I, off by default on an existing ruling), and whether a
+single-tooth `V + I` is ever meant.
+
+### Code, in value order
+
+1. **Homographs need two rows and a ranker that can choose.** хүнд is "heavy"
+   81 times and "to a person" 70 in 16,816 sentences; гэрээ is "contract" 47
+   and "one's home" 12. The silver file already carries the second reading
+   (`alt`) for 61 words; nothing reads it.
+2. **The guesser.** 2.2% of running tokens, mostly loanwords and
+   names. `guessCompound` took the compound names; transliteration of a
+   loanword is the rule-from-a-wordlist trap the 2026-08-10 section warns of.
+3. **The `harvested` tier still carries the silver's selectors** and 174 rows
+   The silver now answers differently. Not regenerated — see
+   `docs/harvest.md` for the measurement. One row at a time, with the reader.
+
+### What not to redo
+
+- Promoting `toli` rows the silver agrees with into `harvested` — broke a
+  ruling for +0.3pp.
+- Reading a whole word ending in vowel + н as an attested stem plus н — right
+  for 20 of 544.
+- Lengthening or shortening a long vowel before the тогтворгүй н — the
+  silver itself is 20 to 8.
+
 ## ⭐ Where the remaining loss actually is — measured 2026-08-10
 
 **This section supersedes the "morphophonology, not a wordlist" thesis below.**
@@ -52,7 +146,7 @@ duly fixed настангууд (`nasutan-ud` → the gold's `nasutan-nuγud`) w
 regression anywhere.
 
 It broke a **reader-confirmed** ruling. мэргэжилтнүүд is `merγeǰilten-üd`,
-reader-supplied 2026-07-26 for a word Tungaamal has no row for — an NA-final
+reader-supplied 2026-07-26 for a word the silver has no row for — an NA-final
 stem taking the bare `üd`.
 
 **Nothing available to `after` separates the two.** настан and мэргэжилтэн are
@@ -87,7 +181,7 @@ That is uncomfortable, because it is the one class this project is forbidden to
 generalise from. CLAUDE.md's rule stands unchanged — *never derive a rule from
 foreign words* — so 9.00pp is **145 lexicon rows and one reader verdict**, not a
 transliteration rule waiting to be written. Anyone who finds a pattern in that
-cluster has found the reference converter's transliteration convention, not
+cluster has found the silver's transliteration convention, not
 Mongolian.
 
 ### ~1.8pp of the "errors" may not be errors
@@ -134,9 +228,9 @@ matters for planning:
 
 Three consequences, in order of how much they change the plan:
 
-1. **Those 273 rows are not accuracy.** They encode the reference converter's
+1. **Those 273 rows are not accuracy.** They encode the silver's
    house style on a question that has two correct answers, so matching them
-   measures agreement with Tungaamal, not correctness. The fixture cannot score
+   measures agreement with the silver, not correctness. The fixture cannot score
    this class and should not be read as if it could.
 2. **The whole-fixture number moves the wrong way when the output improves.**
    With the залгаж reading as the default, the attached half went 0.0% → 66.7%
@@ -365,6 +459,13 @@ whole word merely looks segmentable — аваар `awar`, гэрээс `γeriye
 
 ### Known issue: `-лаг⁴` on a chachlag stem (pre-existing, 2026-07-30)
 
+> **Closed 2026-10-02, on evidence rather than a ruling.** `pnpm lint:output`
+> is at **0** warnings. `assemble` in `generate.ts` now drops the connector
+> when a suffix attaches to a chachlag stem, and refuses to attach one to a
+> word that already ends in a detached suffix. The first half is what the
+> silver does 231 times out of 231; question 5 at the top of this file is
+> the reader's confirmation it still owes.
+
 `pnpm lint:output` reports **14 `unknown-suffix` warnings**, all one shape:
 a chachlag stem plus `-лаг⁴` leaves the stem's MVS mid-word with ЛИГ after it
 (тоосго → ᠲᠣᠭᠤᠰᠭ᠎ᠠᠯᠢᠭ), which the linter cannot parse as a suffix. Confirmed
@@ -542,7 +643,7 @@ Ordered by what would most improve output quality:
 10. **The 26,659-word single-word seed list is fully harvested** (2026-07-26,
     31,320 rows total, zero drops). Growth now needs a NEW word source, not
     more requests: 46.4% of harvested rows are rejected as not-a-lemma, so the
-    12,691-lemma set is the binding constraint, not Tungaamal.
+    12,691-lemma set is the binding constraint, not the silver.
 11. **6.2% of harvested rows carry an FVS digit** (`aü1t1ubü1s` = автобус) —
-    Tungaamal marks foreign sounds with explicit variation selectors. Our generator
+    The silver marks foreign sounds with explicit variation selectors. Our generator
     never emits these, so those rows can never be matched or reproduced.

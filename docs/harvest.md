@@ -2,7 +2,7 @@
 
 <!-- Background doc. Not loaded into context automatically. -->
 
-Read this before importing data, writing a script that talks to a reference
+Read this before importing data, writing a script that talks to a silver
 converter, or wondering why a lexicon row looks the way it does. Every trap
 below was hit for real and fails **silently**.
 
@@ -24,13 +24,13 @@ boundary**) — an unused ready-made test set for stage 3.
 Licensing position taken 2026-07-26: **keep MIT.** A list of Mongolian words is
 facts, not creative expression (*Feist*); what BY-SA protects in these sources is
 the glosses and synset structure, which we take none of. Caveats: the EU
-*sui generis* database right has no US analogue, and Tungaamal's own terms are a
+*sui generis* database right has no US analogue, and the silver's own terms are a
 separate question. Credit the seed sources regardless.
 
 ## The harvested tier
 
 The 8,680 rows in `src/data/harvested-lexicon.ts` were read out of
-reference-converter output and repaired to correct Unicode. **Collection** is
+silver data and repaired to correct Unicode. **Collection** is
 finished — the scripts are gone, and the upstream service went down on
 2026-07-26 — but see the correction below: what was collected had not been
 fully *mined*. What matters now is the shape of what came in, because
@@ -91,9 +91,13 @@ aligner could recover. This source is not exhausted.
 >
 > ⚠ One prerequisite is easy to miss and silently halves the anchors:
 > `attachDetachedSuffix` must be applied **across the token boundary** before
-> aligning. The reference converter writes the genitive detached in sentence
+> aligning. The silver writes the genitive detached in sentence
 > mode and MVS-connected in word mode, so the identical word is one token in
 > the harvest and two in a sentence.
+
+> ⚠ **Superseded 2026-10-02.** "Standard Hudum plus exactly two substitutions"
+> is true of the letters and of nothing else — see `docs/tungaamal.md`, and
+> `src/tungaamal.ts`, which is the repair now.
 
 **The input encoding is not private** — it is standard Hudum plus exactly two
 Ali Gali substitutions, and zero PUA:
@@ -119,11 +123,11 @@ sample). Two *orthographic* differences remain and are handled by
 Every one of these was hit for real. They fail silently, which is why they are
 recorded rather than left to be rediscovered:
 
-1. **Tungaamal silently drops lines mid-batch**, non-deterministically — the same
+1. **the silver silently drops lines mid-batch**, non-deterministically — the same
    word converts fine alone. A dropped line shifts every later row up by one
    with no error. Never align by position. Each line carries a **three-letter
    Latin key** and is matched back by key.
-2. **Digits are NOT usable as keys**, even with `convert-numbers: false`. Tungaamal
+2. **Digits are NOT usable as keys**, even with `convert-numbers: false`. The silver
    converts them: `6` comes back as ᠤ, `10\n11` merges into `112`, and the
    mangling also collapses the whole response onto one line. Latin passes
    through untouched; converted output contains no Latin.
@@ -152,7 +156,11 @@ user-confirmed as not caused by us.
 | `build-wordlist.mjs` | merge seed lists → `.tmp/cyrillic-words.txt` |
 | `the harvester` | words → `.tmp/harvest-harvest.jsonl`; resumable, keyed, circuit-broken |
 | `harvest-sentences.mjs` | sentences → context-shift detection |
+| `standardize-silver.mjs` | raw silver → `.tmp/harvest-harvest.jsonl` + `.tmp/harvest-sentences.jsonl`, through `tungaamalToUnicode`; prefers a word's in-context form |
 | `import-harvest.mjs` | harvest → `src/data/harvested-lexicon.ts` + gold fixture + quarantine |
+| `import-attested.mjs` | silver words → `src/data/attested-forms.ts` (the `attested` tier) + `test/fixtures/attested-heldout.json` |
+| `eval-heldout.mjs` | score the converter on words withheld from the `attested` tier |
+| `eval-sentences.mjs` | word-by-word agreement with the silver on held-out sentences |
 | `import-toli.mjs` | bundled SQLite dictionary → `src/data/toli-lexicon.ts` (the `toli` tier; different filters — see `docs/data-and-accuracy.md`) |
 | `eval.mjs` | score the pipeline against the held-out gold set |
 | `build-spotcheck.mjs` | sample changed / suspicious / random words → review HTML |
@@ -165,7 +173,7 @@ lint-dirty → round-trip-mismatch → **inflected → gold fixture**. Round-tri
 means the romanization must regenerate identical code points, or we do not
 understand the form well enough to store it.
 
-The inflection test runs *last*, on the romanized form, because Tungaamal's
+The inflection test runs *last*, on the romanized form, because the silver's
 output is the reliable signal: it wrote `abu-du` **with a connector**, and that
 is a statement that аавд is stem + suffix. The older test guessed from the
 Cyrillic and only fired when stripping an ending left an attested word — it

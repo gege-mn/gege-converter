@@ -28,7 +28,7 @@
  *
  * ## What this set is NOT
  *
- * These are the **reference converter's** answers, anchor-verified at 95.3%.
+ * These are the **silver data's** answers, anchor-verified at 95.3%.
  * A bichig reader then sampled them twice on 2026-07-27 — 28 forms drawn from
  * the aligned pool before it was trained on, and 28 more drawn from this set
  * once it was carved out — and ruled **56/56 correct**, covering every group
@@ -203,7 +203,7 @@ writeFileSync(
           'Source: word pairs aligned out of the parallel sentences, anchor-verified at 95.3%',
           'leave-one-out. A bichig reader sampled these twice on 2026-07-27 — 28 forms from the',
           'aligned pool and 28 from this set — and ruled 56/56 correct across every group.',
-          'They remain the reference converter’s answers, NOT a reader’s verdicts:',
+          'They remain the silver’s answers, NOT a reader’s verdicts:',
           'test/rulings.test.ts outranks this set wherever the two disagree, and 56 of 658 bounds',
           'the systematic error rate rather than the individual one.',
           '`script` is authoritative and is what grading compares; `classical` is a convenience and',

@@ -11,7 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { convert, MVS, NNBSP, splitClitics, tokenize } from '../src/index.js';
+import { analyze, convert, MVS, NNBSP, splitClitics, tokenize } from '../src/index.js';
 
 describe('the attached directive', () => {
   // The reader's own examples, 2026-07-30. Both spellings are accepted
@@ -87,5 +87,31 @@ describe('token offsets after a split', () => {
   it('returns the stream untouched when nothing splits', () => {
     const tokens = tokenize('монгол бичиг');
     expect(splitClitics(tokens)).toEqual([...tokens]);
+  });
+});
+
+describe('the negative, with a case after it', () => {
+  it('splits the host off and leaves the ending on үгүй', () => {
+    // төлбөргүйгээр is `tölbüri` + `ügei-ber`. Marked wrong by a reader on
+    // 2026-10-02, when only a word-final -гүй was split.
+    const words = (text: string) =>
+      analyze(text)
+        .filter((t) => t.token.kind === 'word')
+        .map((t) => t.candidates[0]?.classical);
+    expect(words('төлбөргүйгээр')[1]).toBe('üγei-ber');
+    expect(words('болохгүйг')[1]).toBe('üγei-yi');
+    expect(words('аюулгүйн')[1]).toBe('üγei-yin');
+    expect(words('хэрэггүйгээ')[1]).toBe('üγei-ben');
+  });
+
+  it('leaves a lexicalised -гүй word whole under the same endings', () => {
+    // бүсгүй is a woman, not "without a belt".
+    expect(analyze('бүсгүйн').filter((t) => t.token.kind === 'word')).toHaveLength(1);
+    expect(analyze('бүсгүйгээс').filter((t) => t.token.kind === 'word')).toHaveLength(1);
+  });
+
+  it('does not take a derivation for a case', () => {
+    // -гүйдэл and -гүйчүүд form words; they are not endings on үгүй.
+    expect(analyze('нойргүйдэл').filter((t) => t.token.kind === 'word')).toHaveLength(1);
   });
 });

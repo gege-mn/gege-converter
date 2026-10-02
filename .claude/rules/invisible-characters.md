@@ -30,7 +30,7 @@ which is the convention for Classical forms in data files anyway.
 **`scripts/` is in the list because of a real failure.** On 2026-07-31 a regex
 character class in `scripts/benchmark.mjs` was written with the connectors typed
 literally, an edit silently dropped U+202F, and the benchmark reported that two
-reference converters agree 10% of the time when the true figure is 88%. A
+silver sets agree 10% of the time when the true figure is 88%. A
 plausible, quotable, completely wrong headline — from a file the guard was not
 looking at.
 

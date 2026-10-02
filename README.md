@@ -21,48 +21,49 @@ convert('хотод');          // → ᠬᠣᠲᠠ + U+180E + ᠳᠤ   (qota-du
 ## Read this before using it
 
 **This is a candidate generator for a human-in-the-loop editor, not an
-unattended converter.** Measured over 1,611 held-out inflected forms and 3,000
-sentences of real running text:
+unattended converter.** Measured over 2,000 sentences of real running text that
+none of the data was built from, and 1,611 held-out inflected forms:
 
 | | | |
 |---|---|---|
-| **73.7%** | correct per word, top-1 — what `convert()` returns | |
-| **95.3%** | correct given a *correct stem* | the ceiling the data is chasing |
-| **91.4%** | of running-text words have a real dictionary stem | the rest are guessed, and a guess is right **6.0%** of the time |
-| **46.0%** | of sentences have every stem from real data | see below |
+| **94.6%** | of words in running text come out as silver data writes them | `node scripts/eval-sentences.mjs` |
+| **58.4%** | of sentences come out so in every word | the row that answers "can I just run text through it" |
+| **97.8%** | of running-text words have a stem from real data | the rest are guessed, and a guess is right **9.3%** of the time |
+| **75.5%** | of inflected forms are *derived* correctly, with the whole-word tier switched off | what the rules do for a word nobody stored |
+| **96.0%** | derived correctly given a *correct stem* | the ceiling the data is chasing |
 
-That last row is the one that matters for "can I just run text through it":
-**54.0%** of real sentences still contain at least one word being guessed at,
-and a single guessed word is usually enough to make the sentence wrong.
+Two in five real sentences still contain at least one word this converter
+writes differently from the silver, and nothing in the output marks which — except
+`provenance`, below. Read that field.
 
-The 95.3% oracle is the reason to be optimistic anyway — the segmenter, suffix
-table and generator are not the bottleneck. With a complete dictionary and no
-code changes, **~62%** of ten-word sentences (the corpus median) would come out
-exact. The gap is data, and a large part of it is verb morphology (see below).
+The first two rows are the ones a user feels, and they are high because of the
+`attested` tier: the commonest 200,000 words of running text, stored
+whole where the rules got them wrong. The fourth row is what is left when that
+tier is switched off, and it is the honest measure of the next word nobody has
+stored.
 
-Token-weighted against a 451k-token parallel corpus, rather than by word type,
-the same build scores **69.3%** — `node scripts/eval-corpus.mjs`. Both numbers
-are real and they answer different questions: a type list cannot see a fix to a
-frequent word land, and a token count over-rewards it.
+Against a second, independent silver set — a 451k-token parallel
+corpus, different text, different tool — the same build scores
+**79.4%** by token and 55.8% by type (`node
+scripts/eval-corpus.mjs`). That is the number least flattered by anything
+stored here.
 
-⚠ **The top-1 figure has two definitions and they are 2.2pp apart.** The table
-gives what a user actually gets. `eval.mjs` also prints *best segmented* (75.9%),
-which skips a memorised whole-word reading to ask whether the segmenter and the
-suffix chain did their job. Both were called "top-1" until 2026-08-10, on which
-day they were briefly equal for unrelated reasons and an hour went into
-attributing a regression to the wrong change. Say which one you mean.
+⚠ **Every script names its denominator; say which one you mean.** `eval.mjs`
+prints *emitted* (what `convert()` returns) and *best segmented* (which skips a
+memorised whole-word reading), and scores the gold with the `attested` tier
+emptied; `eval-sentences.mjs` and `eval-corpus.mjs` score the converter a user
+gets, tier and all. Two of these were both called "top-1" until 2026-08-10, and
+an hour went into attributing a regression to the wrong change.
 
-Regenerate every figure above with `node scripts/eval.mjs --coverage
---sentences`; `pnpm status` adds the per-tier and per-ending breakdowns. Quote
-them from a command, never from memory — this table drifted for a release
-because nobody re-ran it, and every number in it was **understating** the
-converter by the end.
+Regenerate the table with `node scripts/eval-sentences.mjs` and `node
+scripts/eval.mjs --coverage --sentences`; `pnpm status` adds the per-tier and
+per-ending breakdowns. Quote them from a command, never from memory.
 
 Everything above is measured against another converter, not against a bichig
-reader. A reader has ruled on **160** sampled words and forms, all 160 of which
-this build reproduces; that fixture is `test/rulings.test.ts` and it is the
-highest authority in the suite. A further 35 are recorded there as known-wrong
-`it.todo`s rather than quietly omitted.
+reader. A reader has ruled on **196** sampled words and forms, all of
+which this build reproduces; that fixture is `test/rulings.test.ts` and it is
+the highest authority in the suite. A further 19 are recorded there as
+known-wrong `it.todo`s rather than quietly omitted.
 
 ## The API
 
@@ -89,15 +90,35 @@ and монголруу come back as **two** words, and "бодож ч" as **one*
 still tile the input and stay usable as caret positions or linter spans; what
 you cannot do is reconstruct the input by concatenating every `text`.
 
+### The other converter in the box
+
+```ts
+import { tungaamalToUnicode, isTungaamal } from '@gege-mn/gege-converter';
+
+isTungaamal(text);                            // is this Tungaamal text at all?
+tungaamalToUnicode(text);                     // what it means, in correct Unicode
+tungaamalToUnicode(text, { faithful: true }); // exactly what the Tungaamal fonts drew
+```
+
+Bichig → bichig, and nothing to do with Cyrillic. Text typed with Mongolia's
+dominant keyboard and fonts sits in the standard Mongolian block and looks like
+Unicode with two odd letters; it is a different convention all the way down,
+and a Unicode font draws it wrong. This rewrites it. Apply it **once**, to
+text `isTungaamal` recognises: it is not idempotent, and it damages text
+that was already correct. `docs/tungaamal.md` has what the convention is and
+what the conversion is proven against.
+
 ### Reading the output honestly
 
 Two fields tell you how much to trust a candidate, and they are most useful
 together:
 
 - **`provenance`** — `lexicon` (hand-curated, reviewed by a bichig reader),
-  `harvested` (bulk, unreviewed), `toli` (bulk dictionary headwords, the largest
-  and least reviewed tier), or `guess` (rule-based fallback for an unknown stem,
-  right about 6% of the time on held-out forms). Descending trust, left to right.
+  `attested` (this exact word, as silver data writes it — bulk,
+  unreviewed), `harvested` (bulk stems, unreviewed), `toli` (bulk dictionary
+  headwords, the largest and least reviewed tier), or `guess` (rule-based
+  fallback for an unknown stem, right about 9.3% of the time on
+  held-out forms). Descending trust, left to right.
 - **`verbForm`** on the token — set when the word carries a Khalkha verb
   ending. Verb morphology is **partial** (see the limitations below), so this
   marks a reading as worth more scepticism than its `provenance` alone suggests.
@@ -126,7 +147,7 @@ convert(text, {
 });
 ```
 
-`digits` and `punctuation` default to `'ascii'` deliberately: the reference
+`digits` and `punctuation` default to `'ascii'` deliberately: the silver
 charts record U+1810–1819 as "less used now" and UTN #57 §2.2.3 defers every
 numeral specification, so converting them by default would be inventing a
 convention. Digits are applied uniformly across the document, because mixing
@@ -185,13 +206,14 @@ converb, never reflexive `аа` + dative `д`.
 
 ## Data
 
-50,065 stem entries in three tiers, plus 101 nominal suffix rows and 34 verbal
-ones.
+50,065 stem entries in three tiers and 92,550 whole words in a
+fourth, plus 119 nominal suffix rows and 63 verbal ones.
 
 | Tier | Rows | What it is |
 |---|---|---|
 | `lexicon` | 224 | Hand-curated, glossed, reviewed by a bichig reader. |
-| `harvested` | 9,048 | Bulk, machine-repaired to correct Unicode. **Unreviewed.** |
+| `attested` | 92,550 | **Whole words**, not stems: the commonest words of running text as silver data writes them, kept only where the rules below got the word wrong. **Unreviewed.** |
+| `harvested` | 9,048 | Bulk stems, machine-repaired to correct Unicode. **Unreviewed.** |
 | `toli` | 40,793 | Bulk dictionary headwords, romanized from a galig column. **Unreviewed**, and the tier most likely to disagree with this project. |
 
 A curated entry short-circuits the lookup, so a lower row can never outrank a
@@ -227,8 +249,10 @@ Ordered by how much they cost.
 
 - **Verb morphology is partial.** It is no longer absent — 34 verb-suffix rows
   build the participles, the converbs and the past tenses, so ирж → `ireǰü` and
-  харав → `qaraba` are constructed rather than memorised. But on 197 held-out
-  verb forms top-1 is **50.8%**, and this is still the biggest single gap:
+  харав → `qaraba` are constructed rather than memorised. On 197 held-out verb
+  forms top-1 is **81.7%** (it was 50.8% in 0.5.0, before verb stems
+  were also read from dictionary infinitives). The figures below are from 0.5.0
+  and describe where the remaining failures are, not how many:
   **20.9% of running-text words carry a verb ending, and 45.2% of everything the
   guesser emits is verb-shaped.** That second figure rose sharply in 0.5.0 while
   the first fell, and both moves are the same event: the `toli` tier absorbed a
@@ -288,15 +312,16 @@ for a human reader instead.
 MIT — see `LICENSE`. That grant is written for **code**, and this package is
 mostly not code by weight.
 
-**Data provenance.** Of the 50,065 stem entries, 224 are original to this
-project. The `harvested` tier (9,048) is derived from the output of an existing
-Cyrillic→bichig converter; the `toli` tier (40,793) is derived from the galig
-column of a bundled dictionary database. Both were transformed substantially —
-re-romanized through this project's own `toScript`, orthographically normalised,
-and reduced to `cyrillic classical` stem pairs carrying no definitions, glosses
-or example sentences from either source.
+**Data provenance.** Of the 50,065 stem entries, 224 are
+original to this project. The `harvested` tier (9,048) is derived from the
+output of an existing Cyrillic→bichig converter; the `attested` tier (92,550
+whole words) is silver data of the same standing; the `toli` tier (40,793) is
+derived from the galig column of a bundled dictionary database. All were transformed
+substantially — re-romanized through this project's own `toScript`,
+orthographically normalised, and reduced to `cyrillic classical` pairs carrying
+no definitions, glosses or example sentences from either source.
 
-We make no copyright claim over those two tiers and cannot grant rights in them.
+We make no copyright claim over those three tiers and cannot grant rights in them.
 If you intend to redistribute the data itself — as opposed to depending on this
 package to convert text — that is yours to clear. The MIT grant over the code,
 the suffix tables, the rules and the curated `lexicon` tier is unencumbered.

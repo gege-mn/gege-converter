@@ -41,7 +41,7 @@ const linter = await loadLinter();
 
 // ------------------------------------------------------------ harvested data
 
-const tungaamalAnswers = new Map();
+const silverAnswers = new Map();
 // Later files win, so a targeted spot harvest overrides the bulk one.
 for (const file of ['.tmp/harvest-harvest.jsonl', '.tmp/spot.jsonl']) {
   if (!existsSync(file)) continue;
@@ -49,7 +49,7 @@ for (const file of ['.tmp/harvest-harvest.jsonl', '.tmp/spot.jsonl']) {
     if (!line.trim()) continue;
     try {
       const r = JSON.parse(line);
-      tungaamalAnswers.set(r.cyrillic, r);
+      silverAnswers.set(r.cyrillic, r);
     } catch {
       // ignore a torn line
     }
@@ -85,7 +85,7 @@ const spotRows = SPOT.map(([word, probes]) => {
   } catch {
     ours = null;
   }
-  const k = tungaamalAnswers.get(word);
+  const k = silverAnswers.get(word);
   return {
     word,
     probes,
@@ -107,7 +107,7 @@ const QUESTIONS = [
     title: 'долоо — the verb reading',
     body: `долоо is "seven" (<code>doluγ-a</code>, ᠳᠣᠯᠤᠭ\u180Eᠠ) and also the imperative of долоох, "lick".
       By exact analogy with хар (ᠬᠠᠷ\u180Eᠠ qar-a "black" vs ᠬᠠᠷᠠ qara "look"), the verb should drop the
-      chachlag. Tungaamal returns the numeral in <em>every</em> context I tried, including
+      chachlag. The silver returns the numeral in <em>every</em> context I tried, including
       <span class="cy">зайрмаг долоо</span> — so it has the same gap. I will not guess a second
       lexicon row without your ruling.`,
     script: [
@@ -142,12 +142,12 @@ const QUESTIONS = [
   {
     id: 'Q3',
     title: 'монголчууд — which plural?',
-    body: `Tungaamal gives two different plurals for the same word depending on context: <code>-čuul</code>
+    body: `the silver gives two different plurals for the same word depending on context: <code>-čuul</code>
       when the word is alone, <code>-čud</code> inside a sentence. Ours has no entry. Which is correct
       traditional spelling?`,
     script: [
-      ['ᠮᠣᠩᠭᠣᠯᠴᠤᠤᠯ', 'mongγolčuul — Tungaamal, word alone'],
-      ['ᠮᠣᠩᠭᠣᠯᠴᠤᠳ', 'mongγolčud — Tungaamal, in a sentence'],
+      ['ᠮᠣᠩᠭᠣᠯᠴᠤᠤᠯ', 'mongγolčuul — the silver, word alone'],
+      ['ᠮᠣᠩᠭᠣᠯᠴᠤᠳ', 'mongγolčud — the silver, in a sentence'],
     ],
     options: [
       'ᠮᠣᠩᠭᠣᠯᠴᠤᠤᠯ (-čuul) is correct',
@@ -159,33 +159,33 @@ const QUESTIONS = [
   {
     id: 'Q4',
     title: 'сайн — do we stay with the modern form?',
-    body: `You ruled earlier for the modern V+i spelling, and our tests assert it. Tungaamal consistently
+    body: `You ruled earlier for the modern V+i spelling, and our tests assert it. The silver consistently
       writes the older V+y+i (<code>sayin</code>), and 5.8% of harvested rows use that pattern
-      stem-internally. Before I import harvested data, confirm we still overrule Tungaamal here — this
+      stem-internally. Before I import silver data, confirm we still overrule the silver here — this
       decides whether ~309 rows get rewritten or quarantined.`,
     script: [
       ['ᠰᠠᠢᠨ', 'sain — modern V+i, what we emit today'],
-      ['ᠰᠠᠶᠢᠨ', 'sayin — older V+y+i, what Tungaamal emits'],
+      ['ᠰᠠᠶᠢᠨ', 'sayin — older V+y+i, what the silver emits'],
     ],
     options: [
-      'Stay modern — ᠰᠠᠢᠨ; rewrite Tungaamal rows to match',
-      'Stay modern, but quarantine Tungaamal rows rather than rewriting',
-      'Switch to ᠰᠠᠶᠢᠨ — Tungaamal is right, our tests are wrong',
+      'Stay modern — ᠰᠠᠢᠨ; rewrite silver rows to match',
+      'Stay modern, but quarantine silver rows rather than rewriting',
+      'Switch to ᠰᠠᠶᠢᠨ — the silver is right, our tests are wrong',
     ],
   },
   {
     id: 'Q5',
-    title: 'найм — ours vs Tungaamal',
+    title: 'найм — ours vs the silver',
     body: `You supplied ᠨᠠᠶ\u180Bᠮᠠ (NA A YA FVS1 MA A) from a screenshot and our converter matches it
-      exactly. Tungaamal writes ᠨᠠᠢᠮᠠ with a plain I and no YA — and that is inconsistent with Tungaamal's
+      exactly. The silver writes ᠨᠠᠢᠮᠠ with a plain I and no YA — and that is inconsistent with the silver's
       сайн, which does use YA+I. One of them is wrong; I assume ours, but confirm.`,
     script: [
       ['ᠨᠠᠶ\u180Bᠮᠠ', 'nay(FVS1)ma — yours, and what we emit'],
-      ['ᠨᠠᠢᠮᠠ', 'naima — Tungaamal'],
+      ['ᠨᠠᠢᠮᠠ', 'naima — the silver'],
     ],
     options: [
-      'Ours is correct — Tungaamal is wrong here',
-      'Tungaamal is correct — change ours',
+      'Ours is correct — the silver is wrong here',
+      'the silver is correct — change ours',
       'Both acceptable variants',
     ],
   },
@@ -261,18 +261,18 @@ const spotBlock = (r, i) => `
   <p class="probe">${esc(r.probes)}</p>
   ${
     r.agree === true
-      ? '<p class="agree ok">Ours and Tungaamal agree.</p>'
+      ? '<p class="agree ok">Ours and the silver agree.</p>'
       : r.ours && r.sourceUnicode
-        ? '<p class="agree bad">Ours and Tungaamal disagree.</p>'
-        : '<p class="agree dim">No Tungaamal rendering harvested for this word.</p>'
+        ? '<p class="agree bad">Ours and the silver disagree.</p>'
+        : '<p class="agree dim">No silver rendering for this word.</p>'
   }
   <div class="scripts">
     ${r.ours ? scriptBox(r.ours, `ours — ${r.oursClassical} (${r.oursProvenance})`) : '<figure class="sbox"><div class="mn dim">—</div><figcaption>ours: failed to convert</figcaption></figure>'}
-    ${r.sourceUnicode ? scriptBox(r.sourceUnicode, 'Tungaamal, repaired to Unicode 16') : ''}
+    ${r.sourceUnicode ? scriptBox(r.sourceUnicode, 'Silver, repaired to Unicode 16') : ''}
     ${r.alts.map((a) => scriptBox(a.script, `ours, alt — ${a.classical}`)).join('')}
   </div>
   <div class="opts">
-    ${['Ours is correct', 'Tungaamal is correct', 'Both correct', 'Both wrong']
+    ${['Ours is correct', 'the silver is correct', 'Both correct', 'Both wrong']
       .map(
         (o) =>
           `<label><input type="radio" name="S${i + 1}" value="${esc(o)}"> <span>${esc(o)}</span></label>`,
@@ -417,6 +417,6 @@ writeFileSync(OUT, html);
 console.log(`wrote ${OUT}`);
 console.log(`  questions:  ${QUESTIONS.length}`);
 console.log(`  spot words: ${spotRows.length}`);
-console.log(`  ours vs Tungaamal agree: ${spotRows.filter((r) => r.agree === true).length}`);
+console.log(`  ours vs the silver agree: ${spotRows.filter((r) => r.agree === true).length}`);
 console.log(`  disagree:           ${spotRows.filter((r) => r.agree === false).length}`);
-console.log(`  no Tungaamal data:       ${spotRows.filter((r) => r.agree === null).length}`);
+console.log(`  no silver data:       ${spotRows.filter((r) => r.agree === null).length}`);

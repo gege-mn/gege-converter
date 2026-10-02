@@ -88,7 +88,7 @@ tr '\n' ' ' < consensus-words.txt| ./.venv/bin/python convert.py --model model/m
 # in the main repo
 node scripts/eval-model.mjs   --preds .tmp/gold-preds.tsv        # per tier + hybrid
 node scripts/eval-rulings.mjs --preds .tmp/rulings-preds.tsv     # the reader's verdicts
-node scripts/benchmark.mjs    --model .tmp/consensus-preds.tsv   # WER/CER, two-reference
+node scripts/benchmark.mjs    --model .tmp/consensus-preds.tsv   # WER/CER, two-silver
 ```
 
 The word lists come from the repo, and **must be regenerated whenever the
@@ -105,7 +105,7 @@ Why three:
 
 | set | what it can see | what it cannot |
 |---|---|---|
-| gold, 1,884 | per-tier and hybrid behaviour, aggregate | it is Tungaamal-derived, like the model's training targets |
+| gold, 1,884 | per-tier and hybrid behaviour, aggregate | it is silver-derived, like the model's training targets |
 | `rulings.test.ts`, 90 | the only human verdicts in the repo; outranks everything | tiny, and mostly answered from the lexicon |
 | benchmark, 604 | WER/CER against two independent converters | only types both converters agree on — conventional words |
 

@@ -45,8 +45,8 @@ import { fromScript } from '@gege-mn/mongol-bichig';
 import {
   createAligner,
   KIND,
-  normalizeOrthography,
   pairOf,
+  scriptOf,
   splitTailsFrom,
   tokenise,
   trim,
@@ -104,7 +104,7 @@ const harvest = readJsonl(HARVEST);
 /** Cyrillic → normalised script, from the word-level harvest. */
 const oracle = new Map();
 for (const r of harvest) {
-  if (r.cyrillic && r.unicode) oracle.set(r.cyrillic, normalizeOrthography(r.unicode));
+  if (r.cyrillic && r.unicode) oracle.set(r.cyrillic, scriptOf(r));
 }
 const lookup = (k) => oracle.get(k);
 

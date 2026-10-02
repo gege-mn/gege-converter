@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Benchmark against a two-reference consensus set, with WER and CER.
+ * Benchmark against a two-silver consensus set, with WER and CER.
  *
  *   node scripts/benchmark.mjs [--html out.html] [--misses N]
  *                             [--dump-words f.txt] [--model preds.tsv]
@@ -10,14 +10,14 @@
  * There is no large true-gold set for this task and there never has been. Every
  * sizeable fixture in this repo is *silver* — one converter's bulk output — and
  * scoring against silver measures divergence from that system, not correctness.
- * Worse, `harvested-lexicon.ts` **is** Tungaamal's answers, so scoring the
- * pipeline against Tungaamal is circular wherever the harvested tier fires.
+ * Worse, `harvested-lexicon.ts` **is** the silver's answers, so scoring the
+ * pipeline against the silver is circular wherever the harvested tier fires.
  *
  * ## The construction
  *
  * Two independent converters are now available:
  *
- *   A. Tungaamal, via `test/fixtures/harvested-inflected.json` — 1,884 inflected
+ *   A. The silver, via `test/fixtures/harvested-inflected.json` — 1,884 inflected
  *      forms **deliberately held out** of the lexicon, so they are not circular;
  *   B. Inner Mongolia University's online tool, via the parallel corpus.
  *
@@ -33,7 +33,7 @@
  *
  * ## What it still is not
  *
- * ⚠ Consensus is not truth. Both references follow Inner Mongolian convention
+ * ⚠ Consensus is not truth. Both silver sets follow Inner Mongolian convention
  * and predate the 2026 rulebook, so they can agree and both be wrong — and they
  * will agree *most* confidently exactly where a shared convention differs from
  * ours. The published literature warns about this directly: agreement signals
@@ -57,7 +57,7 @@
  * pipeline's position too, so the comparison is like for like.
  *
  * ⚠ What it does **not** control for: the model's training targets are the
- * harvest, which is Tungaamal's output, and half of this reference is Tungaamal.
+ * harvest, and half of this consensus set is that same silver.
  * The model is being scored against a convention it was trained to imitate. The
  * pipeline's harvested tier has the identical advantage, so the two are
  * comparable to each other — but neither number transfers to a reader-gold set.
@@ -67,10 +67,15 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gunzipSync } from 'node:zlib';
+import { emptyAttested } from './lib/derivation.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const load = (p) => import(pathToFileURL(resolve(ROOT, p)).href);
 const { analyze } = await load('dist/index.js');
+// The consensus set is drawn from a gold fixture, and the `attested` tier holds
+// whole words from the same source as half of this silver set. Left live it
+// answers the test from memory — see scripts/lib/derivation.mjs.
+await emptyAttested(ROOT);
 const { toScript } = await load('dist/romanize.js');
 const { normalizeOrthography } = await load('dist/orthography.js');
 
@@ -94,7 +99,7 @@ if (!existsSync(CORPUS)) {
 // FVS1-4 + MVS (U+180B–180F), NNBSP (U+202F) and plain space, as escapes — never
 // as literals. Writing this class with the invisible characters typed directly
 // silently dropped U+202F on 2026-07-31 and inverted the headline result: the
-// two references appeared to agree 10% of the time when the real figure is 88%.
+// two silver sets appeared to agree 10% of the time when the real figure is 88%.
 // That is exactly the failure CLAUDE.md's escape rule exists to prevent.
 const FOLD = /[\u180B-\u180F\u202F\u0020]/g;
 const fold = (s) => s.replace(FOLD, '').replaceAll('ᠶᠢ', 'ᠢ');
@@ -114,17 +119,17 @@ const editDistance = (a, b) => {
   return prev[t.length];
 };
 
-// ------------------------------------------------------ reference A: Tungaamal
-const tungaamal = new Map();
+// ------------------------------------------------------ silver A: the silver
+const silverA = new Map();
 for (const r of JSON.parse(readFileSync(resolve(ROOT, GOLD), 'utf8')).entries) {
   try {
-    tungaamal.set(r.cyrillic, toScript(r.classical));
+    silverA.set(r.cyrillic, toScript(r.classical));
   } catch {
-    // a fixture row we cannot render is not a reference
+    // a fixture row we cannot render is not a silver
   }
 }
 
-// ------------------------------------------------------------- reference B: IMU
+// ------------------------------------------------------------- silver B: IMU
 const imuForms = new Map();
 const freq = new Map();
 for (const line of gunzipSync(readFileSync(CORPUS)).toString('utf8').split('\n')) {
@@ -146,7 +151,7 @@ for (const line of gunzipSync(readFileSync(CORPUS)).toString('utf8').split('\n')
     m.set(bi[i], (m.get(bi[i]) ?? 0) + 1);
   }
 }
-// ⚠ Both references must be normalised the SAME way or the comparison is a lie.
+// ⚠ Both silver sets must be normalised the SAME way or the comparison is a lie.
 // `harvested-inflected.json` stores forms that already went through
 // `normalizeOrthography` at import time, so the raw IMU text has to as well —
 // otherwise the o/ö rule alone makes two systems that agree look like they
@@ -160,16 +165,16 @@ const imu = new Map(
 );
 
 // ------------------------------------------------------------- the consensus set
-const both = [...tungaamal.keys()].filter((w) => imu.has(w));
+const both = [...silverA.keys()].filter((w) => imu.has(w));
 const consensus = [];
 const contested = [];
 for (const w of both) {
-  const a = fold(tungaamal.get(w));
+  const a = fold(silverA.get(w));
   const b = fold(imu.get(w));
   (a === b ? consensus : contested).push({
     w,
     n: freq.get(w) ?? 0,
-    tungaamal: tungaamal.get(w),
+    silverA: silverA.get(w),
     imu: imu.get(w),
   });
 }
@@ -228,7 +233,7 @@ const score = (items, predict = pipeline) => {
   let tokenHit = 0;
   const misses = [];
   for (const it of items) {
-    const ref = fold(it.tungaamal);
+    const ref = fold(it.silverA);
     const { script: ours, tier } = predict(it.w);
     const got = fold(ours);
     tokens += it.n;
@@ -281,9 +286,9 @@ if (MODEL) {
   );
 }
 
-console.log(`two-reference intersection: ${both.length} types`);
+console.log(`two-silver intersection: ${both.length} types`);
 console.log(
-  `  the two references AGREE on   ${consensus.length}  (${pc(consensus.length / both.length)}) — the benchmark set, ${overall.tokens} corpus tokens`,
+  `  the two silver sets AGREE on   ${consensus.length}  (${pc(consensus.length / both.length)}) — the benchmark set, ${overall.tokens} corpus tokens`,
 );
 console.log(
   `  they CONTEST                  ${contested.length}  (${pc(contested.length / both.length)}) — excluded, neither is trustworthy\n`,
@@ -302,7 +307,7 @@ if (SHOW) {
   console.log(`\ntop ${SHOW} consensus misses by corpus frequency:`);
   for (const m of overall.misses.sort((a, b) => b.n - a.n).slice(0, SHOW)) {
     console.log(
-      `  ${m.w.padEnd(14)} ${String(m.n).padStart(5)} [${m.tier.padEnd(9)}] ours=${m.ours}  both refs=${m.tungaamal}`,
+      `  ${m.w.padEnd(14)} ${String(m.n).padStart(5)} [${m.tier.padEnd(9)}] ours=${m.ours}  both refs=${m.silverA}`,
     );
   }
 }
@@ -320,12 +325,12 @@ if (HTML) {
       (m) =>
         `<tr><td class="cyr">${m.w}</td><td class="num">${m.n}</td><td class="tier">${m.tier}</td><td class="bi">${m.ours}</td>${
           MODEL ? `<td class="bi">${modelPreds.get(m.w) ?? ''}</td>` : ''
-        }<td class="bi">${m.tungaamal}</td></tr>`,
+        }<td class="bi">${m.silverA}</td></tr>`,
     )
     .join('\n');
   const html = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Benchmark — two-reference consensus</title>
+<title>Benchmark — two-silver consensus</title>
 <style>${baseCss()}
 table{border-collapse:collapse;width:100%;margin:1rem 0 2.5rem}
 th{text-align:left;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);
@@ -342,13 +347,13 @@ td.tier{font-size:.75rem;color:var(--dim)}
 </style>
 ${header('benchmark')}
 <main>
-<h1>Benchmark: a two-reference consensus set</h1>
+<h1>Benchmark: a two-silver consensus set</h1>
 <p class="lede">There is no large true-gold set for this task. Both big fixtures are one
 converter's output, and <b>our harvested tier <i>is</i> one of them</b>, so scoring against it
 is circular. This benchmark instead uses the ${both.length} word types that <b>two independent
 converters</b> both answer and our lexicon does not contain, and keeps only the
 ${consensus.length} where the two <b>agree with each other</b>.</p>
-<div class="warn"><b>Consensus is not truth.</b> Both references follow Inner Mongolian
+<div class="warn"><b>Consensus is not truth.</b> Both silver sets follow Inner Mongolian
 convention and predate the 2026 rulebook, so they can agree and both be wrong — and they will
 agree most confidently exactly where a shared convention differs from ours. Read this as an
 upper bound on divergence, not a certificate.</div>
@@ -368,13 +373,13 @@ ${tr('hybrid — model only on the guessed slice', score(consensus, hybrid), 'di
 <tr class="ref"><td>Transformer, Na et al. 2022<span class="note">different data: 58k dictionary headwords, random split</span></td><td class="num">5232</td><td class="num">16.92%</td><td class="num">3.15%</td><td class="num">—</td></tr>
 <tr class="ref"><td>joint-sequence n-gram, same paper<span class="note">the pre-neural baseline</span></td><td class="num">5232</td><td class="num">22.63%</td><td class="num">4.20%</td><td class="num">—</td></tr>
 </tbody></table>
-<h2>Where we differ from both references at once</h2>
+<h2>Where we differ from both silver sets at once</h2>
 <p class="lede">Ranked by corpus frequency. These are the items where two independent systems
 agree and we do not — the highest-value questions available without a reader ruling on
 something contested.</p>
 <table><thead><tr><th>Cyrillic</th><th>corpus</th><th>tier</th><th>ours</th>${
     MODEL ? '<th>model</th>' : ''
-  }<th>both references</th></tr></thead>
+  }<th>both silver sets</th></tr></thead>
 <tbody>${missRows}</tbody></table>
 </main>
 ${footer()}`;

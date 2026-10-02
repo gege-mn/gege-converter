@@ -64,3 +64,49 @@ describe('reflexive is chain-final', () => {
     }
   });
 });
+
+describe('a case suffix does not sit inside another case suffix', () => {
+  const CASES = new Set([
+    'genitive',
+    'accusative',
+    'dative-locative',
+    'ablative',
+    'instrumental',
+    'comitative',
+  ]);
+  /** Every adjacent inner>outer pair of plain case suffixes in a chain. */
+  const stacked = (chain: readonly string[]): string[] =>
+    chain.flatMap((category, i) => {
+      const outer = chain[i + 1];
+      return outer !== undefined && CASES.has(category) && CASES.has(outer)
+        ? [`${category}>${outer}`]
+        : [];
+    });
+
+  it('refuses the stack that was swallowing the plural', () => {
+    // сурагчдын was сурагч + dative + genitive, компаниудыг компани + dative +
+    // accusative: 230 such readings won over the 18,743 commonest words of
+    // running text and not one was a genuine double case.
+    for (const word of ['сурагчдын', 'компаниудыг', 'гишүүдийн', 'хэдийгээр']) {
+      for (const chain of chains(word)) {
+        for (const pair of stacked(chain)) {
+          expect(
+            ['genitive>dative-locative', 'dative-locative>ablative'],
+            `${word}: ${pair}`,
+          ).toContain(pair);
+        }
+      }
+    }
+  });
+
+  it('lets the plural reading through instead', () => {
+    expect(chains('компаниудыг')).toContainEqual(['plural', 'accusative']);
+  });
+
+  it('keeps the two double cases Khalkha does form', () => {
+    // аавынд "at father's" and гэртээс "from at home" — both in the gold set,
+    // and both lost when the refusal was first written without exceptions.
+    expect(chains('аавынд')).toContainEqual(['genitive', 'dative-locative']);
+    expect(chains('гэртээс')).toContainEqual(['dative-locative', 'ablative']);
+  });
+});

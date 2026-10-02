@@ -126,6 +126,44 @@ export const suffixes: readonly SuffixEntry[] = [
     }),
   ),
 
+  // ─── Case-bound possession: qi and qin ─────────────────────────────────
+  // The Cyrillic х after a genitive, and -хан⁴ after one: албаныхан is
+  // `alban-u-qin`, өөрийнх is `öber-ün-qi`, мориныход `morin-u-qi-du`. The
+  // registry has carried both since a reader ruled `qi` a real suffix twice on
+  // 2026-07-27 (анчдынх, холтосныхоо); this table never did, so every such
+  // word was a guess — 3,421 of them in the silver set, none right. A
+  // reader marked six on the 2026-10-02 review pages, all the silver's way.
+  //
+  // One row each, and the genitive is whatever genitive row the word has: the
+  // segmenter allows these only directly outside one (`fitsOrder`), which is
+  // also what keeps a bare -х from matching every infinitive.
+  //
+  // ⚠ The -нх- stack above (улсынхаа `ulus-un-iyan`) is a reader's ruling that
+  // the х there has NO Classical counterpart, and it stays. The silver
+  // itself writes that shape both ways (`…-un-qi-ban` too). Where a word is
+  // genitive + х + reflexive and nothing else, the ruled row is one suffix and
+  // this is three, so the ruled reading ranks first.
+  { cyrillic: 'х', classical: 'qi', category: 'possession', separate: true },
+  ...(
+    [
+      ['хан', 'masculine'],
+      ['хон', 'masculine'],
+      ['хэн', 'feminine'],
+      ['хөн', 'feminine'],
+    ] as const
+  ).map(
+    ([cyrillic, harmony]): SuffixEntry => ({
+      cyrillic,
+      classical: 'qin',
+      category: 'possession',
+      harmony,
+      separate: true,
+    }),
+  ),
+  // …and with its vowel dropped, as Cyrillic drops it before a vowel-initial
+  // ending: намынхны is нам-ын-хан-ы, `nam-un-qin-u`.
+  { cyrillic: 'хн', classical: 'qin', category: 'possession', separate: true },
+
   // Genitive — харьяалахын тийн ялгал.
   // yin after a vowel, un/ün after a consonant, u/ü after н (where the н
   // belongs to the Classical stem: ᠬᠠᠭᠠᠨ ᠤ = хааны).
@@ -228,22 +266,75 @@ export const suffixes: readonly SuffixEntry[] = [
     after: 'hard',
     separate: true,
   },
-  // Cyrillic -т is written only after в, г, д, р, с, all of which are hard
-  // finals in Classical too, so these need no condition of their own.
-  {
-    cyrillic: 'т',
-    classical: 'tu',
-    category: 'dative-locative',
-    harmony: 'masculine',
-    separate: true,
-  },
-  {
-    cyrillic: 'т',
-    classical: 'tü',
-    category: 'dative-locative',
-    harmony: 'feminine',
-    separate: true,
-  },
+  // Cyrillic -т is written after в, г, д, р, с. Those are hard finals in
+  // Cyrillic; whether the CLASSICAL stem ends in one is another matter, and it
+  // is the Classical stem the allomorph answers to. бичлэг is `bičilγe` and
+  // дагавар is `daγaburi` — vowel-final, so the dative is the d-form, exactly
+  // as the comment above says of Cyrillic -д pointing the other way.
+  //
+  // Until 2026-10-02 these rows carried no condition and wrote `-tu` on every
+  // stem. Measured that day over the silver set, on words whose stem
+  // The silver spells as we do: after a vowel-final Classical stem the
+  // detached ending is `du`/`dü` **86 times out of 86**, and after a consonant
+  // `tu`/`tü` 219 out of 219.
+  //
+  // ## …and Cyrillic -т is two suffixes
+  //
+  // The other one is the adjective-forming -т, "having": чөлөөт, үнэт, нэрт,
+  // эзэнт. Fused, and always `tu`/`tü` whatever the stem ends in. The old
+  // unconditioned dative row wrote its LETTERS correctly by accident, and
+  // conditioning the dative took that accident away — үнэт came out `üne-dü`
+  // for an hour. So both are rows now, and what tells them apart is the
+  // Cyrillic, counted over the same silver set (words that are not rows already):
+  //
+  //   Cyrillic stem ends in     dative            adjective
+  //   a hard consonant          355 / 825,220     132 / 129,282     types / tokens
+  //   a vowel, or л м н           3 /     740      97 / 191,299
+  //
+  // The second line is the spelling rule itself: the dative after a vowel or
+  // a soft final is written -д, so a -т there is not the dative (the three
+  // exceptions are р + soft sign, лагерьт, which `afterCyrillic` looks
+  // through). The first line is a real ambiguity — салбарт is a dative, нэрт
+  // an adjective — and is weighed: `share` is the token count above.
+  ...(
+    [
+      ['tu', 'masculine', 'consonant'],
+      ['tü', 'feminine', 'consonant'],
+      ['du', 'masculine', 'vowel'],
+      ['dü', 'feminine', 'vowel'],
+    ] as const
+  ).map(
+    ([classical, harmony, after]): SuffixEntry => ({
+      cyrillic: 'т',
+      classical,
+      category: 'dative-locative',
+      harmony,
+      after,
+      afterCyrillic: 'hard',
+      separate: true,
+      share: 0.86,
+    }),
+  ),
+  // Adjective-forming -т — дагавар, залгаж. `derivational` puts it in the
+  // innermost slot, so a case goes on after it (тэмдэгтийн) and never before.
+  ...(
+    [
+      ['tu', 'masculine', 'soft', undefined],
+      ['tü', 'feminine', 'soft', undefined],
+      ['tu', 'masculine', 'hard', 0.14],
+      ['tü', 'feminine', 'hard', 0.14],
+    ] as const
+  ).map(
+    ([classical, harmony, afterCyrillic, share]): SuffixEntry => ({
+      cyrillic: 'т',
+      classical,
+      category: 'derivational',
+      harmony,
+      afterCyrillic,
+      separate: false,
+      ...(share === undefined ? {} : { share }),
+    }),
+  ),
 
   // Ablative — гарахын тийн ялгал
   { cyrillic: 'аас', classical: 'ača', category: 'ablative', harmony: 'masculine', separate: true },
@@ -435,6 +526,54 @@ export const suffixes: readonly SuffixEntry[] = [
     share: 0.72,
   },
 
+  // ─── -тай³ + the linking г + a case, 2026-10-02 ────────────────────────
+  // амжилттайгаар, илүүтэйгээр, морьтойгоо. -тай ends in a diphthong, so a
+  // vowel-initial ending reaches it through the linking г — the letter
+  // Cyrillic inserts and Classical does not have (`dropLinkingG` in `stem.ts`
+  // is the same fact on a stem). That path needs the form before the г to be
+  // an attested word, and амжилттай is not a row: it is амжилт + тай. So the
+  // word had no reading at all and the peel took -аар off a guessed stem.
+  //
+  // One row per surface, like the -нх- stack above and for its reason: peeled
+  // as two, the segmenter would need to know a Cyrillic г can vanish. The
+  // inflected gold has 53 forms of this shape and nearly every one was a miss;
+  // it writes `tai-bar` / `tei-ber`, `tai-ban`, `tai-yi`.
+  //
+  // ⚠ Where the word up to and including -тай is itself a row — эмэгтэй,
+  // алтай — the reading is that word plus a linking г, not a shorter stem plus
+  // one of these. `resolveStem` refuses the stem in that case.
+  //
+  // Written дагуулж throughout, because -тай³ is: a reader ruled both spellings
+  // correct and said this project detaches (docs/rulings.md, T1/T2). The gold
+  // writes the instrumental ones attached more often than not —
+  // `amǰiltatai-bar` — and that difference is the house style, not an error:
+  // the letters are the same. Detached is also the only spelling that is
+  // well-formed after a plural (хүүхдүүдтэйгээр `…-üd-tei-ber`).
+  ...(
+    [
+      ['тайгаар', 'tai-bar', 'masculine', 'instrumental'],
+      ['тойгоор', 'tai-bar', 'masculine', 'instrumental'],
+      ['тэйгээр', 'tei-ber', 'feminine', 'instrumental'],
+      ['төйгөөр', 'tei-ber', 'feminine', 'instrumental'],
+      ['тайгаа', 'tai-ban', 'masculine', 'reflexive'],
+      ['тойгоо', 'tai-ban', 'masculine', 'reflexive'],
+      ['тэйгээ', 'tei-ben', 'feminine', 'reflexive'],
+      ['төйгөө', 'tei-ben', 'feminine', 'reflexive'],
+      ['тайг', 'tai-yi', 'masculine', 'accusative'],
+      ['тойг', 'tai-yi', 'masculine', 'accusative'],
+      ['тэйг', 'tei-yi', 'feminine', 'accusative'],
+      ['төйг', 'tei-yi', 'feminine', 'accusative'],
+    ] as const
+  ).map(
+    ([cyrillic, classical, harmony, category]): SuffixEntry => ({
+      cyrillic,
+      classical,
+      category,
+      harmony,
+      separate: true,
+    }),
+  ),
+
   // Reflexive-possessive — хамаатуулах нөхцөл. ban/ben after a vowel,
   // iyan/iyen after a consonant. Stacks after a case suffix (задлаг хэлбэр),
   // where the condition reads the case suffix's own final letter.
@@ -513,7 +652,7 @@ export const suffixes: readonly SuffixEntry[] = [
   // re-derive it from the gold set — the gold is wrong here, or at least it is
   // not what the reader writes.**
   //
-  // The evidence for it looks overwhelming and is entirely Tungaamal's. Counted
+  // The evidence for it looks overwhelming and is entirely the silver's. Counted
   // over the whole inflected gold set by the Classical stem's final letter:
   //
   //   n-final          →  nuγud   37   ud/üd   0
@@ -526,7 +665,7 @@ export const suffixes: readonly SuffixEntry[] = [
   // gold set at all.
   //
   // It regressed a **reader-confirmed** ruling: мэргэжилтнүүд is
-  // `merγeǰilten-üd`, reader-supplied on 2026-07-26 for a word Tungaamal has no
+  // `merγeǰilten-üd`, reader-supplied on 2026-07-26 for a word the silver has no
   // row for. That stem ends in NA and takes the bare `üd`.
   //
   // The two cannot be told apart. настан and мэргэжилтэн are the **same

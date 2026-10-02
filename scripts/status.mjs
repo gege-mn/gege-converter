@@ -32,6 +32,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { emptyAttested } from './lib/derivation.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const load = (p) => import(pathToFileURL(resolve(ROOT, p)).href);
@@ -43,6 +44,10 @@ if (!existsSync(resolve(ROOT, 'dist/index.js'))) {
 
 const { analyze } = await load('dist/index.js');
 const { toScript } = await load('dist/romanize.js');
+
+// Gold is scored with the attested tier emptied — see `lib/derivation.mjs` —
+// and the tier is put back before `--coverage`, which measures running text.
+const restoreAttested = await emptyAttested(ROOT);
 
 const WANT_COVERAGE = process.argv.includes('--coverage');
 const pct = (n, d) => (d === 0 ? '   —  ' : `${((100 * n) / d).toFixed(1).padStart(5)}%`);
@@ -127,7 +132,7 @@ function score(entries) {
  *
  * Add the tier here when `Provenance` grows, and prefer a shape that throws.
  */
-const TIER_ORDER = ['lexicon', 'harvested', 'toli', 'guess', 'none'];
+const TIER_ORDER = ['lexicon', 'attested', 'harvested', 'toli', 'guess', 'none'];
 
 function report(title, path, entries) {
   const r = score(entries);
@@ -183,6 +188,7 @@ if (verb) report('VERBS, held out', 'test/fixtures/verb-gold.json', verb);
  * the harder ones. On 2026-07-26 the lexicon nearly doubled, top-1 went 52.5%
  * → 50.9% and coverage 63.8% → 70.1%. Only the second number was real.
  */
+restoreAttested();
 if (WANT_COVERAGE) {
   const corpus = resolve(ROOT, '.tmp/harvest-sentences.jsonl');
   if (!existsSync(corpus)) {

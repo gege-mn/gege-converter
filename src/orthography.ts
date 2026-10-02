@@ -29,7 +29,7 @@ const CONNECTORS: ReadonlySet<number> = new Set([0x180e, 0x202f, 0x0020]);
 /**
  * Drop the glide YA from a medial i-diphthong: `V + YA + I` becomes `V + I`.
  *
- * Tungaamal writes сайн as `sayin` (the older Classical V+y+i); this project
+ * The silver writes сайн as `sayin` (the older Classical V+y+i); this project
  * writes `sain`, the modern analysis UTN #57 prefers. The rewrite is confined
  * to the **stem** — the material before the first connector — because the
  * genitive and accusative suffixes ᠶᠢᠨ/ᠶᠢ legitimately begin YA+I and must not
@@ -64,7 +64,7 @@ const UE = 0x1826;
  * Rewrite O/Ö past the first syllable to U/Ü.
  *
  * The rule is categorical in Mongol bichig: after the first syllable a
- * masculine word takes u and a feminine one ü. Tungaamal applies it almost
+ * masculine word takes u and a feminine one ü. The silver applies it almost
  * everywhere (ᠪᠣᠭᠤᠨᠢ, ᠣᠷᠤᠢ) but exempts ᠮᠣᠩᠭᠣᠯ, which this project does not.
  *
  * Loanwords are left alone: they keep their o (ᠹᠣᠲᠣ, ᠻᠢᠨᠣ), and a word is
@@ -77,6 +77,16 @@ const UE = 0x1826;
 const isGalig = (cp: number): boolean => cp >= 0x1838 && cp <= 0x1842;
 
 export function foldNonInitialO(script: string): string {
+  // Word by word. "First syllable" and "loanword" are both facts about one
+  // word, and until 2026-10-02 this read its whole input as one: handed
+  // ᠤᠯᠤᠰ ᠲᠥᠷᠥ (`ulus törü`) it folded the ö of the SECOND word, whose first
+  // syllable it is, and one galig letter anywhere switched the fold off for
+  // every word beside it. It only ever mattered for a reading of two words,
+  // which nothing stored until the `attested` tier did.
+  return script.includes(' ') ? script.split(' ').map(foldWord).join(' ') : foldWord(script);
+}
+
+function foldWord(script: string): string {
   const cps = [...script].map((c) => c.codePointAt(0) ?? 0);
   if (cps.some(isGalig)) return script;
   const out: number[] = [];
@@ -130,7 +140,7 @@ const SEPARATE_SUFFIXES: ReadonlySet<string> = new Set(
  *
  * Classical orthography has a real tradition of writing the case particles
  * detached — genitive ᠤ/ᠦ, accusative ᠢ, ablative ᠠᠴᠠ, reflexive ᠪᠠᠨ — with a
- * space and an FVS1 on the head letter to select its isolate form. Tungaamal
+ * space and an FVS1 on the head letter to select its isolate form. The silver
  * follows it: 580 harvested rows write the genitive as `ᠬᠠᠭᠠᠨ<SPACE>ᠤ<FVS1>`
  * and **none** write it MVS-connected. This project writes MVS, which is what
  * `separate: true` in the suffix registry means and what the pipeline's own
@@ -226,4 +236,26 @@ export function repairDevoicedGa(cyrillic: string, script: string): string {
  */
 export function normalizeOrthography(script: string): string {
   return foldNonInitialO(dropGlideYa(attachDetachedSuffix(script)));
+}
+
+/**
+ * The same normalisation for text that has been through `tungaamalToUnicode`.
+ *
+ * Identical to `normalizeOrthography` minus `dropGlideYa`, and the omission is
+ * the point. In text repaired the old way — the two letters swapped, nothing
+ * else — a medial `V + YA + I` is always the diphthong, because the rarer
+ * consonantal y carried an FVS1 that kept `dropGlideYa` off it. The converter
+ * resolves both for real: the diphthong's YA is already gone (the table's
+ * YA-DIPH row, proven against the fonts on 600 of 600 token types), and the
+ * consonantal y is left as plain YA, which is what the standard writes it with.
+ * Running `dropGlideYa` over that output collapses exactly the words it used to
+ * leave alone — хаяг `qayiγ` becomes `qaiγ`, намайг `namay1i` loses nothing but
+ * the next such word does.
+ *
+ * So: `normalizeOrthography` for a source that spells diphthongs `V + y + i`
+ * with letters (the dictionary galig, the parallel corpus, an old-format
+ * harvest), this for `tungaamalToUnicode` output.
+ */
+export function normalizeConverted(script: string): string {
+  return foldNonInitialO(attachDetachedSuffix(script));
 }

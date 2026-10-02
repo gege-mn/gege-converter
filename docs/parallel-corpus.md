@@ -12,7 +12,7 @@ list**, and both distort in ways that have already cost this project real time:
 
 | source | size | what is wrong with it |
 |---|---|---|
-| harvested lexicon | ~30k rows | Tungaamal output — a real converter that disagrees with us on documented points, reviewed by nobody |
+| harvested lexicon | ~30k rows | silver data that disagrees with us on documented points, reviewed by nobody |
 | inflected gold | 1,884 forms | built from a **lemma dictionary**; 273 of its rows are the attached -тай³ class and score **0.0%**, because a lemma list only carries the adjectival ones as headwords |
 | verb gold | 197 forms | same word-list shape, so it says nothing about running text |
 | `test/rulings.test.ts` | ~90 assertions | genuinely ground truth, and it costs a human's attention every single round |

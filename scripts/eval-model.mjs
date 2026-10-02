@@ -41,6 +41,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { emptyAttested } from './lib/derivation.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
@@ -61,6 +62,9 @@ Generate it on the training box:
 const load = (p) => import(pathToFileURL(resolve(ROOT, p)).href);
 const { analyze } = await load('dist/index.js');
 const { toScript } = await load('dist/romanize.js');
+// A gold fixture measures derivation, so the attested tier is emptied for the
+// whole run — see `lib/derivation.mjs`.
+await emptyAttested(ROOT);
 
 const gold = JSON.parse(readFileSync(resolve(ROOT, GOLD), 'utf8')).entries;
 
@@ -78,7 +82,7 @@ for (const line of readFileSync(PREDS, 'utf8').split('\n')) {
 // accumulate throws. That is the right failure: this script existed for two
 // weeks after `toli` landed and would otherwise have quietly scored the whole
 // tier as if it were something else. Add the tier when `Provenance` grows.
-const TIERS = ['lexicon', 'harvested', 'toli', 'guess', 'none'];
+const TIERS = ['lexicon', 'attested', 'harvested', 'toli', 'guess', 'none'];
 const zero = () => ({ n: 0, pipeline: 0, model: 0, hybrid: 0 });
 const byTier = Object.fromEntries(TIERS.map((t) => [t, zero()]));
 /** Only populated by fixtures that carry a `group`, i.e. the verb gold set. */

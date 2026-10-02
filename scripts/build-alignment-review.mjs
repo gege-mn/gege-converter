@@ -7,7 +7,7 @@
  *
  * The aligned pairs are real harvested data, not synthesis, and leave-one-out
  * over held-out anchors puts the alignment at 95.3%. But 95.3% is a measurement
- * of *alignment*, not of *correctness* — every pair is still the reference
+ * of *alignment*, not of *correctness* — every pair is still the silver
  * converter's answer, and this project differs from it on documented points.
  * The failure mode to fear is the one from 2026-07-27: a whole class of rows
  * carrying one systematic error, invisible to aggregate accuracy because the
@@ -204,7 +204,7 @@ textarea{width:100%;height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,m
 <h1>Do these belong in the training set?</h1>
 <p class="lede">These word pairs were pulled out of the 4,000 parallel <b>sentences</b> — running
 text, which is why they contain inflected verbs the word-level harvest never had. Alignment is
-measured at 95.3%, but that measures alignment, not correctness: every pair is still the reference
+measured at 95.3%, but that measures alignment, not correctness: every pair is still the silver
 converter's answer. <b>Nothing here has been trained on yet.</b> Rule on what you can, skip what you
 can't, then paste the block at the bottom back to me. Script is vertical in a real Mongolian font;
 code points sit underneath for byte-checking.</p>

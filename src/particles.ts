@@ -34,7 +34,7 @@
  *
  * A free-standing `či` — ᠴᠢ, which **is the pronoun чи, "you"**. So the old
  * output did not merely spell the particle wrong, it substituted a different
- * word into the sentence. Wiktionary and the reference converter both said
+ * word into the sentence. Wiktionary and the silver both said
  * `ču` and were not believed until a reader confirmed it; that queue is in
  * `docs/rulings.md`.
  *

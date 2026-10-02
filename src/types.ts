@@ -35,6 +35,13 @@ export type SuffixCategory =
    */
   | 'case-possessive'
   /**
+   * Case-bound possession — `qi` (-ынх, -ных: "the one of") and `qin` (-ынхан,
+   * -ныхан: "the people of"). The registry's own category name. It exists only
+   * directly outside a genitive (алба-ны-хан), and takes case and the
+   * reflexive outside itself (морин-ы-х-од). Added 2026-10-02.
+   */
+  | 'possession'
+  /**
    * Word-forming rather than inflectional — the `-лиг` adjectival, and the
    * place for `-лт`/`-мж` and the rest when they are measured. Added
    * 2026-07-30, alongside `agent` in `VerbEndingKind`, which is the same
@@ -91,6 +98,19 @@ export interface SuffixEntry {
    * chained suffix sees the preceding suffix's final letter.
    */
   after?: StemCondition;
+  /**
+   * What the **Cyrillic** stem must end in — the letter written right before
+   * this suffix, a soft sign looked through. `hard` is a consonant other than
+   * л, м, н; `soft` is a vowel or one of those three.
+   *
+   * The mirror of `after`, and rarer: set only where the Cyrillic spelling
+   * itself says which suffix a surface is. Today that is Cyrillic -т alone.
+   * The dative is written -т only after a hard final (салбарт) and -д
+   * everywhere else, so a -т after a vowel or after л/м/н cannot be the dative
+   * and is the adjective-forming -т (чөлөөт, эзэнт). Checked while segmenting,
+   * where the Cyrillic stem is in hand.
+   */
+  afterCyrillic?: 'hard' | 'soft';
   /**
    * Written detached, after a suffix connector (MVS). True for the case
    * suffixes and clitics; false for suffixes fused into the stem word.
@@ -157,10 +177,18 @@ export interface Segmentation {
  * Where a candidate's Classical form came from, in descending trust:
  *
  * - `lexicon`   — hand-curated and reviewed by a bichig reader.
+ * - `attested`  — the **whole word** as the silver wrote it, kept
+ *                 only where that differs from what the tiers below would have
+ *                 derived. Same source and same repairs as `harvested`, but a
+ *                 different claim: a `harvested` row says "this is a stem",
+ *                 an `attested` row says only "this exact word is spelled
+ *                 so". It answers a whole word outright; as a stem it is
+ *                 asked last, above only `toli` and a guess — see the two
+ *                 lookups in `stem.ts`.
  * - `harvested` — read out of Tungaamal-encoded text, repaired to correct
  *                 Unicode by gege-linter and orthographically normalised by
  *                 `orthography.ts`. A large, useful, *unreviewed* tier:
- *                 Tungaamal is a real converter, but it disagrees with this
+ *                 The silver is real converter output, but it disagrees with this
  *                 project on documented points, so one of its rows must never
  *                 outrank a `lexicon` one for the same word.
  * - `toli`      — headwords from a bundled SQLite dictionary, romanized from
@@ -189,7 +217,7 @@ export interface Segmentation {
  * `!== 'guess'` remains correct for the other question — "is this word
  * attested at all" — as in reporting and coverage. Know which you are asking.
  */
-export type Provenance = 'lexicon' | 'harvested' | 'toli' | 'guess';
+export type Provenance = 'lexicon' | 'attested' | 'harvested' | 'toli' | 'guess';
 
 /** One plausible traditional-script reading of a Cyrillic word. */
 export interface Candidate {
@@ -219,11 +247,19 @@ export type VerbEndingKind =
   | 'converb-imperfective'
   | 'converb-conditional'
   | 'converb-terminative'
+  /** The modal converb `-н` (аван, болон, эхлэн). Added 2026-10-02. */
+  | 'converb-modal'
+  /** The durative converb `-саар⁴` — the past participle plus the instrumental. Added 2026-10-02. */
+  | 'converb-durative'
   | 'participle-past'
   | 'participle-habitual'
   | 'tense-present'
   | 'tense-past'
   | 'evidential'
+  /** The voluntative `-я/-е/-ъя/-ье` (явъя, үзье). Added 2026-10-02. */
+  | 'voluntative'
+  /** The polite imperative `-аарай⁴`. Added 2026-10-02. */
+  | 'imperative'
   | 'negative'
   /**
    * The `-гч` agent noun. Derivational, not an inflection — the odd one out
@@ -330,7 +366,7 @@ export interface ConvertOptions {
   /** Cap on candidates kept per word after ranking. Default 5. */
   maxCandidates?: number;
   /**
-   * How to write digits in the output. Default `'ascii'` — the reference
+   * How to write digits in the output. Default `'ascii'` — the silver
    * charts record U+1810–1819 as "less used now" and UTN #57 §2.2.3 defers
    * every numeral specification, so converting by default would be inventing
    * a convention. Applied uniformly across the document, because mixing the

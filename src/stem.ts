@@ -1,8 +1,9 @@
 import { endsInVowel } from './allomorph.js';
 import { harmonyOf, isCyrillicVowel } from './chars.js';
+import { attestedIndex } from './data/attested-forms.js';
 import { harvestedIndex, lexiconIndex } from './data/lexicon.js';
 import { toliIndex } from './data/toli-lexicon.js';
-import { isRomanizable } from './romanize.js';
+import { isRomanizable, toScript } from './romanize.js';
 import type { Harmony, LexiconEntry, Provenance, SuffixEntry } from './types.js';
 
 export interface StemMatch {
@@ -44,12 +45,48 @@ export function withUnstableN(classical: string): string {
 export const GUESS_PRIOR = 0.15;
 
 /**
- * Prior for a harvested Tungaamal row. Sits between a curated entry and a guess:
- * far better than rule-based invention, but unreviewed, and Tungaamal differs from
+ * Prior for a guess assembled from two attested words — see `guessCompound`.
+ * Still a guess and still labelled one; a little above the letter-by-letter
+ * guess so that ганболд read as ган + болд outranks the same letters read as
+ * an unknown ганбол with a dative on it.
+ */
+export const COMPOUND_GUESS_PRIOR = 0.2;
+
+/**
+ * Prior for a harvested row. Sits between a curated entry and a guess:
+ * far better than rule-based invention, but unreviewed, and the silver differs from
  * this project on documented points. A curated entry short-circuits the lookup
  * entirely, so this can never outrank one for the same word.
  */
 export const HARVESTED_PRIOR = 0.5;
+
+/**
+ * Prior for an `attested` whole word. Above every reading the pipeline can
+ * *derive* — a curated stem with one suffix peeled scores 0.7 at best — and
+ * below a curated whole-word row, which short-circuits before this is asked.
+ *
+ * The height is the claim: this is the exact word, as written by the source
+ * the `harvested` stems came from, and the importer stored it only because the
+ * derivation disagreed. A row that merely repeats the derivation is never
+ * stored, so there is nothing for this to outrank except the reading it was
+ * kept to correct.
+ */
+export const ATTESTED_PRIOR = 0.9;
+
+/**
+ * Prior for an `attested` word pressed into service as a stem — see the
+ * last-resort lookup in `resolveStem`. Between `toli` and `harvested`: the
+ * spelling comes from the better source of the two, but nothing says the word
+ * is a stem at all.
+ *
+ * Swept 2026-10-02 over the held-out words, which are the only fixture that
+ * can see this number — a held-out word is never in the tier, so its stem
+ * being there is exactly the case. On the 512 held out at the time: 0.35
+ * scores 81.4%, 0.24 scores 80.9%, 0.18 scores 80.7%. Above `toli` is where it
+ * earns its place. (The fixture has grown since; `scripts/eval-heldout.mjs`
+ * prints today's figure, and this is the sweep, not the score.)
+ */
+export const ATTESTED_STEM_PRIOR = 0.35;
 
 /**
  * Prior for a `toli` row — the bundled-dictionary tier. Below `harvested`,
@@ -102,7 +139,16 @@ const LETTER_MAP: ReadonlyMap<string, string> = new Map([
   // The 5% that show a `y` are the ай- root taking an epenthetic vowel
   // (айлга `ayulγ-a`), which is lexical and does not generalise.
   ['й', 'i'],
-  ['к', 'k'],
+  // ᠻ (kh), not ᠬ (k). Cyrillic к occurs only in loanwords, and the letter
+  // they are written with is the galig KHA: of 486 silver words containing
+  // к, 479 (98.6%) carry ᠻ — клип `khlip`, компани `khompani`, техник
+  // `tēqnikh` — and the curated кирилл is `khirill`. The old `k` here is the
+  // native feminine QA, so an unknown loanword came out with a letter no
+  // source writes it with (клип as `klip`). Measured 2026-10-02 over the
+  // running-text silver set. This is the transliteration convention itself, not
+  // a rule about Mongolian drawn from foreign words: nothing native has a к
+  // for it to apply to.
+  ['к', 'kh'],
   ['л', 'l'],
   ['м', 'm'],
   ['н', 'n'],
@@ -200,6 +246,63 @@ export function guessStem(cyrillic: string): string {
     if (VOWELS.includes(ch)) seenVowel = true;
   }
   return closeOpenSyllable(out, chars[chars.length - 1], front);
+}
+
+/** The foreign-word letters, U+1838–U+1842: a word carrying one keeps its o. */
+const hasGalig = (classical: string): boolean =>
+  [...toScript(classical)].some((c) => {
+    const cp = c.codePointAt(0) ?? 0;
+    return cp >= 0x1838 && cp <= 0x1842;
+  });
+
+const COMPOUND_MIN_LENGTH = 7;
+const COMPOUND_MIN_HEAD = 3;
+const COMPOUND_MIN_TAIL = 4;
+
+/**
+ * A word no tier knows, read as two attested words written together —
+ * ганболд is ган + болд, өмнөговь is өмнө + говь. `undefined` when it does
+ * not split that way.
+ *
+ * This is how Mongolian builds personal and place names, and a name is exactly
+ * the word no dictionary has. Letter by letter the guesser cannot know that
+ * ган is `γang` or that бат is `batu`; the two rows already do.
+ *
+ * Measured 2026-10-02 over the words of the silver set that fall to the
+ * guesser: 153 split this way, the join is what the silver wrote for 124 of
+ * them, and the letter-by-letter guess was right for 13. One word the old
+ * guess had right is lost.
+ *
+ * - **Curated and harvested rows only**, never `toli` — the usual reason: a
+ *   weak tier asked early invents a segmentation.
+ * - **The longest head wins**, and the tail is at least four letters. With a
+ *   three-letter tail the split starts taking endings for words (бичиг + дэх,
+ *   байдаг + сан) and loses six where the guess was right; at four it loses
+ *   one.
+ * - **The tail's o and ö fold to u and ü**, because inside the compound they
+ *   are no longer in the first syllable: болд `bolud` gives `γangbulud`. A
+ *   loanword tail keeps its o, as it does everywhere else.
+ * - A chachlag head loses its connector, as it does before an н: the vowel is
+ *   no longer word-final. The TAIL keeps its own — гантулга is `γangtulγ-a`.
+ * - A selector on the tail's first letter is dropped. It picked that letter's
+ *   word-initial form (дугаар `d1uγar`), and the letter is not initial here.
+ *
+ * ⚠ Still `guess`. Two real rows do not make the join real — эрдэм + тэд is
+ * not how эрдэмтэд is built — and one row in five is wrong.
+ */
+function guessCompound(cyrillic: string): string | undefined {
+  if (cyrillic.length < COMPOUND_MIN_LENGTH) return undefined;
+  const known = (word: string): string | undefined =>
+    lexiconIndex.get(word)?.[0]?.classical ?? harvestedIndex.get(word)?.[0]?.classical;
+  for (let at = cyrillic.length - COMPOUND_MIN_TAIL; at >= COMPOUND_MIN_HEAD; at -= 1) {
+    const head = known(cyrillic.slice(0, at));
+    if (head === undefined) continue;
+    const tail = known(cyrillic.slice(at));
+    if (tail === undefined) continue;
+    const folded = hasGalig(tail) ? tail : tail.replace(/o/g, 'u').replace(/ö/g, 'ü');
+    return `${head.replace(/-/g, '')}${folded.replace(/^(\D)\d/, '$1')}`;
+  }
+  return undefined;
 }
 
 /**
@@ -363,7 +466,12 @@ function dropLinkingG(cyrillic: string, innermost: SuffixEntry | undefined): str
   const stem = cyrillic.slice(0, -1);
   const last = stem[stem.length - 1] as string;
   if (!VOWELS.includes(last) && last !== 'й' && last !== 'н') return [];
-  return lexiconIndex.has(stem) || harvestedIndex.has(stem) || toliIndex.has(stem) ? [stem] : [];
+  return lexiconIndex.has(stem) ||
+    attestedIndex.has(stem) ||
+    harvestedIndex.has(stem) ||
+    toliIndex.has(stem)
+    ? [stem]
+    : [];
 }
 
 /**
@@ -518,6 +626,45 @@ const MIN_SOFT_SIGN_STEM = 3;
 const ABSORBED_FINAL_VOWELS = [...'аэ'];
 
 /**
+ * The base to try when the peeled form is a **ч-final noun plus the plural -д**.
+ *
+ * The plural of an agent or occupation noun is written -чид — сурагч, сурагчид;
+ * судлаач, судлаачид — and before a case ending the и drops: сурагчдын,
+ * төлөөлөгчдийн. In Classical the stem ends `či` and the plural is a bare `d`
+ * fused onto it: `suruγčid`, `suruγčid-un`. Nothing here knew that. The whole
+ * word read as the dative (`suruγči-du`, which сурагчид can also be), and the
+ * oblique forms left сурагчд, which is nothing, so they went to the guesser as
+ * `suraγčd-un`.
+ *
+ * Measured 2026-10-02 over 22,603 words of running text: 271 have this shape,
+ * 258 on a base some tier attests, and where that base's Classical ends in
+ * `či` the silver's form begins with base + `d` in 248. The pipeline had 37
+ * of them right. One of the reader's standing todos is this rule and nothing
+ * else — бүтээлчдээс `bütügelčid-eče`.
+ *
+ * Two conditions, both doing work:
+ *   - the base must be **attested and end in `či`** in Classical. That is what
+ *     says "a ч-final noun"; a guessed base would let this fire on anything.
+ *   - the base must be **four letters or more**. Short ч-final nouns are not
+ *     agents, and -ид on them is the dative: мөчид is `möče-dü`, "at the
+ *     moment", and the one miss in the sample that is not a loanword.
+ *
+ * ⚠ сурагчид is genuinely two words — "the pupils" and "to the pupil" — and
+ * this does not delete the second: the dative is still built by the ordinary
+ * path and still ranked. This only makes the commoner reading exist.
+ */
+function agentPluralBase(cyrillic: string): string | undefined {
+  const base = cyrillic.endsWith('чид')
+    ? cyrillic.slice(0, -2)
+    : cyrillic.endsWith('чд')
+      ? cyrillic.slice(0, -1)
+      : undefined;
+  return base !== undefined && base.length >= MIN_AGENT_BASE ? base : undefined;
+}
+
+const MIN_AGENT_BASE = 4;
+
+/**
  * Does this row carry a **тогтворгүй н** — an unstable final NA that the
  * citation form drops and an oblique form brings back?
  *
@@ -542,7 +689,19 @@ const takesUnstableN = (entry: LexiconEntry): boolean =>
  * single low-confidence guess when it isn't known.
  * Returns an empty array only when even the guess is unromanizable.
  */
+/** The -тай³ + linking г + case rows of `suffixes.ts`: тайгаар, тэйгээ, тойг… */
+const COMITATIVE_STACK = /^т[аоэө]йг/;
+
 export function resolveStem(cyrillic: string, innermost?: SuffixEntry): StemMatch[] {
+  // эмэгтэйгээ is эмэгтэй + г + ээ, not эмэг + тэйгээ; алтайг is the Altai in
+  // the accusative, not ал with a comitative. Where the letters up to and
+  // including -тай are a word some tier holds, that word is the stem and the
+  // stacked row has no business with a shorter one — it would win on prior,
+  // being a real stem with one suffix, and say something else entirely.
+  if (innermost !== undefined && COMITATIVE_STACK.test(innermost.cyrillic)) {
+    const word = cyrillic + innermost.cyrillic.slice(0, 3);
+    if (lexiconIndex.has(word) || attestedIndex.has(word) || harvestedIndex.has(word)) return [];
+  }
   const entries = lexiconIndex.get(cyrillic);
   if (entries !== undefined && entries.length > 0) {
     return entries.map((e) => ({
@@ -552,6 +711,23 @@ export function resolveStem(cyrillic: string, innermost?: SuffixEntry): StemMatc
       provenance: 'lexicon' as const,
       hiddenN: takesUnstableN(e),
     }));
+  }
+  // The whole word as attested — asked here only when nothing was peeled, which
+  // is what `innermost === undefined` means. An attested row is a statement
+  // about one exact word, so it is not a stem at this height: `хэлэн` attested
+  // would capture хэлэнд, the very failure that put `toli` last. It is asked
+  // again as a stem at the bottom, after every real stem — see there.
+  if (innermost === undefined) {
+    const attested = attestedIndex.get(cyrillic);
+    if (attested !== undefined && attested.length > 0) {
+      return attested.map((classical, i) => ({
+        classical,
+        // A second reading is real (the source wrote both in running text) but
+        // rarer; halving per rank keeps it visible without letting it win.
+        prior: ATTESTED_PRIOR / 2 ** i,
+        provenance: 'attested' as const,
+      }));
+    }
   }
   // Harvested rows are consulted only when the curated lexicon has nothing, so
   // a reviewed entry always wins outright rather than competing on prior.
@@ -601,6 +777,18 @@ export function resolveStem(cyrillic: string, innermost?: SuffixEntry): StemMatc
   const restored = restoreUnstableVowel(cyrillic).flatMap(lookupAttested);
   if (restored.length > 0) return restored;
 
+  // The agent plural: an attested `či` stem with the plural `d` fused on. It
+  // accounts for every letter of the Cyrillic, so like the н and г readings
+  // below it short-circuits rather than being offered beside a guess. The н is
+  // not this stem's to take — `suruγčid` ends in a consonant — hence the flag.
+  const agentBase = agentPluralBase(cyrillic);
+  if (agentBase !== undefined) {
+    const plural = lookupAttested(agentBase)
+      .filter((match) => /[cč]i$/.test(match.classical))
+      .map((match) => ({ ...match, classical: `${match.classical}d`, hiddenN: false }));
+    if (plural.length > 0) return plural;
+  }
+
   // The stem's own soft sign, absorbed by a vowel-initial suffix. Ordered here
   // because it is the same kind of claim as the unstable vowel — a letter the
   // Cyrillic spelling moved rather than one either side invented — and, like
@@ -640,7 +828,14 @@ export function resolveStem(cyrillic: string, innermost?: SuffixEntry): StemMatc
   //
   // модонд and усанд still keep their н, which is the case this looked like it
   // was needed for; they get there without it.
-  const unlinked = dropLinkingN(cyrillic).flatMap(lookupAttested);
+  //
+  // ⚠ Only under a peeled suffix. A linking н links a stem to something; on a
+  // whole word there is nothing for it to link, and the final -ан/-эн is the
+  // word's own — most often the modal converb. Asked there anyway, this gave
+  // салан the bare noun сал `sal` at full harvested confidence, which also
+  // held the verb gate shut on the converb `salun`. Found 2026-10-02 in the
+  // held-out misses: өргөжүүлэн, хууран, салан, each written as its stem.
+  const unlinked = innermost === undefined ? [] : dropLinkingN(cyrillic).flatMap(lookupAttested);
 
   // Both, not the first that hits. These are two readings of the same н and
   // they contradict each other, so this is the package's standing answer to
@@ -664,7 +859,23 @@ export function resolveStem(cyrillic: string, innermost?: SuffixEntry): StemMatc
   // argument: after both dictionaries, before the guess. It fully accounts for
   // the Cyrillic, so like the н readings it short-circuits rather than being
   // offered alongside a guess.
-  const unlinkedG = dropLinkingG(cyrillic, innermost).flatMap(lookupAttested);
+  //
+  // The one restoration that also asks the `attested` tier, and as a stem at
+  // that. What stands before a linking г is a whole word by construction —
+  // эмэгтэй in эмэгтэйгээ — which is exactly what an attested row is, so this
+  // is its own claim and not the loose "maybe the rest is a suffix" of the
+  // last-resort lookup below. Real stems first, then this, then `toli`.
+  const unlinkedG = dropLinkingG(cyrillic, innermost).flatMap((stem): StemMatch[] => {
+    const real = lookupAttested(stem);
+    if (real.some((match) => match.provenance !== 'toli')) return real;
+    const whole = (attestedIndex.get(stem) ?? []).map((classical, i) => ({
+      classical,
+      prior: (ATTESTED_STEM_PRIOR * RESTORED_DISCOUNT) / 2 ** i,
+      provenance: 'attested' as const,
+      hiddenN: false,
+    }));
+    return whole.length > 0 ? whole : real;
+  });
   if (unlinkedG.length > 0) return [...softened, ...unlinkedG];
 
   // The bundled dictionary, asked LAST — after curated, after harvested, and
@@ -680,6 +891,31 @@ export function resolveStem(cyrillic: string, innermost?: SuffixEntry): StemMatc
   //
   // Down here the tier can only add readings where nothing else produced one,
   // which is the only claim this source is good enough to make.
+  // An attested whole word used as a STEM — and only down here, after every
+  // path that works from a real stem has had its say. The row was stored as a
+  // word, so this is a weaker claim than the whole-word lookup at the top:
+  // "the silver spells баттулга so, therefore баттулгад is that plus a
+  // dative". It is asked before `toli` because a key held by both means the
+  // silver disagreed with the dictionary about this very word, and the
+  // whole-word answer has already gone the silver's way; the inflected
+  // forms should not then go the other.
+  //
+  // ⚠ Same placement argument as `toli`, and the same failure if it moves up:
+  // attested rows include inflected words (яваа, хэлэн), and one of those
+  // consulted early would capture every longer word that starts with it.
+  const attestedStem = innermost === undefined ? undefined : attestedIndex.get(cyrillic);
+  if (attestedStem !== undefined && attestedStem.length > 0) {
+    return [
+      ...softened,
+      ...attestedStem.map((classical, i) => ({
+        classical,
+        prior: ATTESTED_STEM_PRIOR / 2 ** i,
+        provenance: 'attested' as const,
+        hiddenN: takesUnstableN({ cyrillic, classical, freq: ATTESTED_STEM_PRIOR }),
+      })),
+    ];
+  }
+
   const toli = toliIndex.get(cyrillic);
   if (toli !== undefined && toli.length > 0) {
     return [
@@ -690,6 +926,16 @@ export function resolveStem(cyrillic: string, innermost?: SuffixEntry): StemMatc
         provenance: 'toli' as const,
         hiddenN: takesUnstableN({ cyrillic, classical, freq: TOLI_PRIOR }),
       })),
+    ];
+  }
+
+  // Two known words written as one, before the letter-by-letter guess: both
+  // are guesses, and this is the better-informed of the two.
+  const compound = guessCompound(cyrillic);
+  if (compound !== undefined && isRomanizable(compound)) {
+    return [
+      ...softened,
+      { classical: compound, prior: COMPOUND_GUESS_PRIOR, provenance: 'guess' as const },
     ];
   }
 

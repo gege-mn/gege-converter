@@ -1,12 +1,12 @@
 /**
- * Cyrillic → Classical pairs harvested from Tungaamal,
+ * Bulk Cyrillic → Classical pairs — silver —
  * encoding-repaired by gege-linter and orthographically normalised by
  * `src/orthography.ts`. GENERATED — do not edit by hand.
  *
  *   node scripts/import-harvest.mjs
  *
  * This is the `harvested` provenance tier: large and useful, but UNREVIEWED. The
- * reference is a real converter and agrees with a bichig reader on most spot checks, but
+ * silver is real converter output and agrees with a bichig reader on most spot checks, but
  * it differs from this project on documented points (it writes ᠮᠣᠩᠭᠣᠯ, and the
  * older V+y+i diphthong), which is why every row here has been through
  * `normalizeOrthography` first. A word already present in the hand-curated

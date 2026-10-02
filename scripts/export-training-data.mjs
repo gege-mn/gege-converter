@@ -41,9 +41,7 @@ if (!fs.existsSync(path.resolve(ROOT, 'dist/orthography.js'))) {
   console.error('needs a build first: pnpm build');
   process.exit(1);
 }
-const { normalizeOrthography } = await import(
-  pathToFileURL(path.resolve(ROOT, 'dist/orthography.js')).href
-);
+const { scriptOf } = await import(pathToFileURL(path.resolve(ROOT, 'scripts/lib/silver.mjs')).href);
 
 const OUT_DIR = process.argv[2] ?? '.tmp/training';
 const HARVEST = '.tmp/harvest-harvest.jsonl';
@@ -146,7 +144,7 @@ const heldOut = new Set([
 // ---- pairs ---------------------------------------------------------------
 
 // `unicode` is gege-linter's *encoding* repair only. The orthographic layer is
-// separate and must be applied here too, or the model learns the reference
+// separate and must be applied here too, or the model learns the silver
 // converter's spelling rather than this project's.
 //
 // This is not theoretical. A first run trained on un-normalised targets
@@ -167,7 +165,7 @@ const seen = new Set();
 const pairs = [];
 for (const row of [...harvest, ...recovered, ...aligned]) {
   const src = (row.cyrillic ?? '').toLowerCase();
-  const tgt = normalizeOrthography(row.unicode ?? '');
+  const tgt = scriptOf(row);
   if (src.length === 0 || tgt.length === 0) continue;
   if (heldOut.has(src)) continue;
   const key = `${src}\t${tgt}`;

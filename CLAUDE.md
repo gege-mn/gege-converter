@@ -10,6 +10,10 @@ no third-party runtime dependencies, nothing trained. A wrong word is a data row
 you edit, not a retraining run. Eight pipeline stages, one per file in `src/`,
 pure functions; only stage 7 (ranking) is statistical.
 
+`src/tungaamal.ts` is a second, self-contained thing in the same package:
+Tungaamal-convention bichig → Unicode. It shares no code with the eight stages
+and `scripts/standardize-silver.mjs` uses it to read silver data.
+
 <!-- Maintainer notes — block-level HTML comments are stripped before this file
      reaches Claude's context, so they cost zero tokens.
 
@@ -29,8 +33,9 @@ pure functions; only stage 7 (ranking) is statistical.
 
 `pnpm build` · `pnpm typecheck` · `pnpm test` · `pnpm lint` — all four must pass
 before anything is called done. `pnpm status` prints where the converter stands;
-`node scripts/eval.mjs` and `scripts/eval-corpus.mjs` are the two scores. Quote a
-number from a command, never from memory, and name the script that produced it.
+`node scripts/eval.mjs` and `scripts/eval-corpus.mjs` are the two scores, and
+`scripts/eval-sentences.mjs` the running-text one. Quote a number from a
+command, never from memory, and name the script that produced it.
 
 pnpm only — `npm`, `npx` and `pnpm exec` are blocked in this environment.
 
@@ -47,20 +52,33 @@ pnpm only — `npm`, `npx` and `pnpm exec` are blocked in this environment.
   scored the curated lexicon at 56% when the truth was 83%. Use
   `toScript(a) === toScript(b)`.
 - **Exclude the `toli` tier by name, never by `!== 'guess'`.** Tiers rank
-  `lexicon` > `harvested` > `toli` > `guess`. Wherever code asks "do we already
-  have a real reading, so stop looking", `toli` must be named explicitly; it
-  broke seven reader rulings three separate ways otherwise, and its data was
-  wrong in none of them. A weak tier's damage is the better paths it stops from
-  running. (`!== 'guess'` is still right for "is this attested at all".)
+  `lexicon` > `attested` > `harvested` > `toli` > `guess`. Wherever code asks
+  "do we already have a real reading, so stop looking", `toli` must be named
+  explicitly; it broke seven reader rulings three separate ways otherwise, and
+  its data was wrong in none of them. A weak tier's damage is the better paths
+  it stops from running. (`!== 'guess'` is still right for "is this attested at
+  all".) **An `attested` row used as a STEM is the same kind of weak claim** —
+  the row is a whole word; only as a whole word does it settle anything.
+- **Score a gold fixture with the `attested` tier emptied.** That tier stores
+  whole words from the same silver the gold came from, so left live it
+  answers gold from memory. `scripts/lib/derivation.mjs` empties it for the
+  duration; running text, the rulings and `attested-heldout.json` are scored
+  with it live.
 - **The parallel corpus is private; this package is not.** Reader-written
   sentences live outside this repo (`../gege-corpus`, `$GEGE_CORPUS`, or
   `--corpus PATH`) and are never released. Word pairs, rules and aggregate
   counts may cross in and ship; sentences and any fixture built from them never
   do. A trained model memorises them, so `training/` must not become a runtime
   dependency and no checkpoint trained on them may be published.
-- **Naming the outside world.** Encodings and converters may be named as
-  technical artifacts — Tungaamal, Menksoft PUA, Saiyin. Company names, service
-  domains, endpoints and anything reading as credit never appear.
+- **Naming the outside world.** Encodings may be named as technical artifacts
+  — Tungaamal (the keyboard-and-font convention, and the module that reads it:
+  `tungaamalToUnicode`), Menksoft PUA, Saiyin. Company names, service domains,
+  endpoints and anything reading as credit never appear. **Where bulk data
+  came from is not discussed at all** in new code, comments, docs, tests,
+  branch names or commit messages — no source named, no "reference", no
+  "harvest" story (owner, 2026-10-02). Data that is good but unreviewed is
+  **silver**; scores are "against the silver". The older tier and file names
+  (`harvested`, `docs/harvest.md`) stay as they are.
 
 ## Authority, in order
 
@@ -81,7 +99,8 @@ Do not read these by default. Open one when its topic actually comes up.
 |---|---|
 | `docs/architecture.md` | changing a pipeline stage, `romanize.ts`, the data layout, or the one remaining duplication |
 | `docs/data-and-accuracy.md` | optimising anything, quoting a metric, or touching the ranker |
-| `docs/harvest.md` | importing data, or writing a script that talks to a reference converter |
+| `docs/harvest.md` | importing data, or writing a script that talks to silver data |
+| `docs/tungaamal.md` | touching `src/tungaamal.ts`, reading silver data, or anything about the Tungaamal convention |
 | `docs/roadmap.md` | choosing what to work on next |
 | `docs/rulings.md` | changing romanization, the guesser, the suffix table, or anything about o/ö |
 | `docs/architecture-rationale.md` | re-litigating algorithm-vs-model |

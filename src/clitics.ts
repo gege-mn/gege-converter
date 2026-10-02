@@ -105,13 +105,13 @@ const CLITICS: ReadonlyArray<{ form: string; afterR: boolean }> = [
  *
  * The directive requires the remainder to be attested too. Here that is wrong,
  * and measurably so. Swept over all 641 single-word harvest rows ending in
- * -гүй — 578 of which the reference writes as two words, 18 of which it fuses:
+ * -гүй — 578 of which the silver writes as two words, 18 of which it fuses:
  *
  *     gate                              splits  wrong  recall
  *     whole unattested + host attested     274      0   47.5%
  *     whole unattested                     577      2  100.0%
  *
- * The two "wrong" are rows where the reference produced garbage rather than a
+ * The two "wrong" are rows where the silver produced garbage rather than a
  * fusion — авгалдайнуудгүй came out `abaγaldai-nuγud taγ-a`, which contains no
  * `ügei` at all — so there is no attested fusion the wide gate breaks. Requiring
  * an attested host would cost чадахгүй, болоогүй and half the class for
@@ -137,6 +137,31 @@ const CLITICS: ReadonlyArray<{ form: string; afterR: boolean }> = [
  * honest reason to prefer a lexicon row for any -нгүй word that turns up.
  */
 const NEGATIVE = { ending: 'гүй', word: 'үгүй' } as const;
+
+/**
+ * What may follow -гүй inside the same Cyrillic word: the negative takes case
+ * and the reflexive like any noun, and the bichig word that carries them is
+ * үгүй, not the host. төлбөргүйгээр is `tölbüri` + `ügei-ber`.
+ *
+ * Until 2026-10-02 only a word-FINAL -гүй was split, so these fell to the
+ * guesser whole (`tölbürgüig-iyer`), and a reader marked two of the first
+ * three on a review page. Counted over the silver set, by ending — how
+ * many it writes as two words with the ending on `ügei`:
+ *
+ *   -гүйгээр  1,014 of 1,027      -гүйгээс  172 of 175
+ *   -гүйн       299 of   304      -гүйгээ    78 of  82
+ *   -гүйг       184 of   190      -гүйдээ    38 of  46
+ *   -гүйд        60 of    69      -гүйтэй    19 of  36
+ *
+ * The ones it leaves whole are the lexicalised fusions the bare rule already
+ * exempts — бүсгүйн is бүсгүй, a woman, in the genitive — and they are
+ * exempted here the same way: the word up to and including -гүй is attested.
+ *
+ * A list, not "anything the pipeline can inflect үгүй with": -гүйдэл and
+ * -гүйчүүд are derivations (нойргүйдэл, ажилгүйчүүд) and stay one word.
+ * Longest first, so -гүйгээр is not read as -гүйг with letters left over.
+ */
+const NEGATIVE_TAILS = ['гээр', 'гээс', 'гээ', 'дээ', 'тэй', 'н', 'г', 'д'] as const;
 
 /**
  * Shortest host we will split off. A one-letter host is never a noun phrase
@@ -197,6 +222,14 @@ function splitOne(token: Token): Token[] | undefined {
     // The fused words are all attested whole and were rejected above.
     const host = normalized.slice(0, normalized.length - NEGATIVE.ending.length);
     if (host.length >= MIN_HOST_LENGTH) return splitAt(token, host.length, NEGATIVE.word);
+  }
+
+  for (const tail of NEGATIVE_TAILS) {
+    if (!normalized.endsWith(NEGATIVE.ending + tail)) continue;
+    const fused = normalized.slice(0, normalized.length - tail.length);
+    const host = fused.slice(0, fused.length - NEGATIVE.ending.length);
+    if (host.length < MIN_HOST_LENGTH || isAttested(fused)) return undefined;
+    return splitAt(token, host.length, NEGATIVE.word + tail);
   }
 
   return undefined;

@@ -30,7 +30,7 @@
  *    reading recorded in the orthography reference, which licenses non-initial
  *    o after an initial o; the school rule taught in Mongolia does not, and
  *    the school rule is the one to follow — settled 2026-07-26 after
- *    Tungaamal was found to apply it throughout its own output.
+ *    The silver was found to apply it throughout its own output.
  *    `гол` → `γool` is a genuine lexical exception and is commented as such.
  * 2. **Medial i-diphthongs are written V+i, not V+y+i** — сайн is `sain`, per
  *    the modern analysis UTN #57 prefers over the older Classical spelling.
@@ -52,7 +52,7 @@ export const lexicon: readonly LexiconEntry[] = [
   // Both plurals are real and mean the same thing: -čud is the grammatical
   // form, -čuul a colloquial one (ruled 2026-07-26). Keeping both means
   // монголчууд round-trips whichever a writer used. The stem keeps `u` per the
-  // o/ö rule even though Tungaamal writes mongγol here — that ruling stands.
+  // o/ö rule even though the silver writes mongγol here — that ruling stands.
   { cyrillic: 'монголчууд', classical: 'mongγulčud', gloss: 'Mongols', freq: 0.7 },
   { cyrillic: 'монголчууд', classical: 'mongγulčuul', gloss: 'Mongols (colloquial)', freq: 0.3 },
   { cyrillic: 'бичиг', classical: 'bičig', gloss: 'writing, script', freq: 1 },
@@ -236,7 +236,8 @@ export const lexicon: readonly LexiconEntry[] = [
   { cyrillic: 'өндөр', classical: 'öndür', gloss: 'tall, high', freq: 1 },
   { cyrillic: 'жижиг', classical: 'ǰiǰig', gloss: 'tiny', freq: 1 },
   { cyrillic: 'халуун', classical: 'qalaγun', gloss: 'hot', freq: 1 },
-  { cyrillic: 'хүйтэн', classical: 'köiten', gloss: 'cold', freq: 1 },
+  // `küiten`, not `köiten` — "it's ү not ө" (reader, 2026-10-02).
+  { cyrillic: 'хүйтэн', classical: 'küiten', gloss: 'cold', freq: 1 },
   { cyrillic: 'хурдан', classical: 'qurdun', gloss: 'fast', freq: 1 },
   { cyrillic: 'удаан', classical: 'udaγan', gloss: 'slow', freq: 1 },
   { cyrillic: 'баян', classical: 'bayan', gloss: 'rich', freq: 1 },
@@ -273,13 +274,35 @@ export const lexicon: readonly LexiconEntry[] = [
   { cyrillic: 'боловч', classical: 'bolbaču', gloss: 'although, but', freq: 1 },
   { cyrillic: 'хомхой', classical: 'qomuqai', gloss: 'greedy', freq: 1 },
 
+  // гэрээ is two words. The contract is `ger-e`; гэр + the reflexive is
+  // `ger-iyen` and is derived, not listed. "if it's contract, it's гэр-э, but if
+  // it's home/yurt + аа/ээ → гэр-ийэн" (reader, 2026-10-02). The contract is
+  // the commoner in running text — 47 sentences to 12 — so it is the row, and
+  // the other stays a candidate.
+  { cyrillic: 'гэрээ', classical: 'ger-e', gloss: 'contract, agreement', freq: 1 },
+  // мөч "moment" is `möče`: "мөч as in time is written мөчэ" (reader,
+  // 2026-10-02). The harvested row had `möči`.
+  { cyrillic: 'мөч', classical: 'möče', gloss: 'moment', freq: 1 },
+
   // ─── Numbers ───────────────────────────────────────────────────────────
-  { cyrillic: 'нэг', classical: 'nigen', gloss: 'one', freq: 1 },
+  // нэг is `nige`; `nigen` is нэгэн. Ruled 2026-10-02 — "nige is correct,
+  // nigen = нэгэн" — after the row had said `nigen` since the start. It was the
+  // largest single disagreement with running text: 123 of 1,834 differing
+  // words in 2,000 sentences. зургаа (`ǰirγuγ-a`) and тав (`tabu`) followed the
+  // same day, each asked by name. ⚠ гурав, дөрөв, мянга and the rest were NOT
+  // asked and still carry their н; three bare numerals make a pattern, and a
+  // pattern is a question for the reader, not a row edit.
+  { cyrillic: 'нэг', classical: 'nige', gloss: 'one', freq: 1 },
   { cyrillic: 'хоёр', classical: 'qoyar', gloss: 'two', freq: 1 },
   { cyrillic: 'гурав', classical: 'γurban', gloss: 'three', freq: 1 },
   { cyrillic: 'дөрөв', classical: 'dörben', gloss: 'four', freq: 1 },
-  { cyrillic: 'тав', classical: 'tabun', gloss: 'five', freq: 1 },
-  { cyrillic: 'зургаа', classical: 'ǰirγuγan', gloss: 'six', freq: 1 },
+  // `tabu` — reversed 2026-10-02 ("табу"), from the `tabun` ruled on 2026-07.
+  // `tabun` is таван. The н comes back under a suffix, as it does for any
+  // тогтворгүй-н stem.
+  { cyrillic: 'тав', classical: 'tabu', gloss: 'five', freq: 1, hiddenN: true },
+  // "if it's just number six, it's ǰirγuγ-a" (reader, 2026-10-02) — bare, as
+  // нэг is. The row had the н.
+  { cyrillic: 'зургаа', classical: 'ǰirγuγ-a', gloss: 'six', freq: 1 },
   { cyrillic: 'долоо', classical: 'doluγ-a', gloss: 'seven', freq: 0.9 },
   // The verb долоох "to lick" is NOT the same stem with a dropped chachlag.
   // It is a different Classical word entirely: доло­ох = ᠳᠣᠯᠢᠶᠠᠬᠤ `doliyaqu`,
@@ -333,7 +356,8 @@ export const lexicon: readonly LexiconEntry[] = [
   { cyrillic: 'явах', classical: 'yabuqu', gloss: 'to go', freq: 1 },
   { cyrillic: 'ирэх', classical: 'irekü', gloss: 'to come', freq: 1 },
   { cyrillic: 'идэх', classical: 'idekü', gloss: 'to eat', freq: 1 },
-  { cyrillic: 'уух', classical: 'uγuqu', gloss: 'to drink', freq: 1 },
+  // The stem is уу `uuγu`: "уу (uuγu) + х (qu)" (reader, 2026-10-02).
+  { cyrillic: 'уух', classical: 'uuγuqu', gloss: 'to drink', freq: 1 },
   { cyrillic: 'өгөх', classical: 'ögkü', gloss: 'to give', freq: 1 },
   { cyrillic: 'авах', classical: 'abqu', gloss: 'to take', freq: 1 },
   { cyrillic: 'хийх', classical: 'kikü', gloss: 'to do, to make', freq: 1 },
@@ -387,7 +411,11 @@ export const lexicon: readonly LexiconEntry[] = [
   // Reader corrections that contradict the harvest. The harvest is another
   // converter's output and loses to a reader on sight.
   { cyrillic: 'цөөн', classical: 'čögegen', gloss: 'few', freq: 1 },
-  { cyrillic: 'үнэт', classical: 'ünedü', gloss: 'valuable', freq: 1 },
+  // үнэт was `ünedü` here from the 2026-07 article pass. Reversed 2026-10-02:
+  // shown the silver's `ünetü` beside 68 other adjectives in -т that all
+  // take `t` (чөлөөт, гавьяат, нэрт), the owner judged the silver's "might
+  // be better". The row stays so the word is curated rather than derived.
+  { cyrillic: 'үнэт', classical: 'ünetü', gloss: 'valuable', freq: 1 },
   { cyrillic: 'цэн', classical: 'čen-e', gloss: 'value (in үнэ цэнэ)', freq: 1 },
   { cyrillic: 'биз', classical: 'biǰe', gloss: 'is it not (particle)', freq: 1 },
   { cyrillic: 'тэгээд', classical: 'tegeged', gloss: 'and then', freq: 1 },
@@ -521,7 +549,7 @@ export const lexicon: readonly LexiconEntry[] = [
   { cyrillic: 'авав', classical: 'abuba', gloss: 'took (past)', freq: 1 },
 
   // The word that started the loan-letter work. кирилл takes KHA (U+183B),
-  // ruled 2026-07-30 — the reader was shown the reference converter's ᠻирилл
+  // ruled 2026-07-30 — the reader was shown the silver's ᠻирилл
   // and confirmed it. It could not be written here until mongol-bichig 0.2.2
   // gave loan letters a romanization (`kh`), because every row in this file
   // is romanized and `test/data.test.ts` converts all of them.
@@ -666,7 +694,7 @@ const buildIndex = (entries: readonly LexiconEntry[]): ReadonlyMap<string, Lexic
 export const lexiconIndex: ReadonlyMap<string, readonly LexiconEntry[]> = buildIndex(lexicon);
 
 /**
- * The same, for the generated Tungaamal tier. Kept as a separate index rather than
+ * The same, for the generated the silver tier. Kept as a separate index rather than
  * merged so that a curated entry short-circuits the lookup — see `resolveStem`.
  */
 export const harvestedIndex: ReadonlyMap<string, readonly LexiconEntry[]> =

@@ -1,16 +1,18 @@
 import { allomorphFits } from './allomorph.js';
 import { carriesStemN } from './data/suffixes.js';
 import { normalizeWord } from './normalize.js';
-import { toScript } from './romanize.js';
+import { toScript, wordsToScript } from './romanize.js';
 import { segment } from './segment.js';
 import {
+  ATTESTED_STEM_PRIOR,
   HARVESTED_PRIOR,
   RESTORED_DISCOUNT,
   resolveStem,
   type StemMatch,
+  TOLI_PRIOR,
   withUnstableN,
 } from './stem.js';
-import type { Candidate, Segmentation } from './types.js';
+import type { Candidate, Provenance, Segmentation } from './types.js';
 import { parseVerb } from './verb-stem.js';
 
 // `allomorphFits` moved to ./allomorph.ts so the verb side can share it without
@@ -26,18 +28,41 @@ export { allomorphFits };
  * the Unicode 16.0 suffix connector. NNBSP (U+202F) is never emitted; that is
  * the whole point of this package existing.
  *
- * The stem is never rewritten. A chachlag stem keeps its connector and the
- * suffix adds its own, so харууд is `qar-a` + `nuγud` — two MVS in one word,
- * which is correct. An earlier version stripped the chachlag to avoid an MVS
- * appearing mid-word; that was papering over a missing allomorph condition.
- * The real guard is `after`: `ud` is restricted to consonant-final stems, so a
- * chachlag stem simply never selects it.
+ * Under a DETACHED suffix the stem is never rewritten. A chachlag stem keeps
+ * its connector and the suffix adds its own, so харууд is `qar-a` + `nuγud` —
+ * two MVS in one word, which is correct. An earlier version stripped the
+ * chachlag to avoid an MVS appearing mid-word; that was papering over a missing
+ * allomorph condition. The real guard is `after`: `ud` is restricted to
+ * consonant-final stems, so a chachlag stem simply never selects it.
+ *
+ * Under an ATTACHED suffix the chachlag stops being one. It is a word-final
+ * a/e written apart, and once letters follow it inside the same word it is no
+ * longer final — гавьяа `γabiy-a` + the adjective -т is `γabiyatu`, not
+ * `γabiy-atu`. Until 2026-10-02 this kept the connector and stranded an MVS
+ * mid-word, the shape `pnpm lint:output` reports as `unknown-suffix`. A reader
+ * said on 2026-08-10 that attaching "applies гэдэс жийрэглэх"; what that does
+ * to the letters is read here off the silver set, where a fused suffix
+ * on a chachlag stem loses the connector **231 times out of 231** (200 with
+ * -тай³, 31 with -т) and keeps it never. `withUnstableN` in `stem.ts` is the
+ * same fact for a stem's н.
+ *
+ * ⚠ Evidence, not a ruling: the reader named the rule and has not been shown
+ * these forms. If the answer is something else, this is the one place to say
+ * so.
  */
 export function assemble(stemClassical: string, segmentation: Segmentation): string | undefined {
   let out = stemClassical;
   for (const suffix of segmentation.suffixes) {
     if (!allomorphFits(suffix.after, out)) return undefined;
-    out += (suffix.separate ? '-' : '') + suffix.classical;
+    if (suffix.separate) {
+      out += `-${suffix.classical}`;
+      continue;
+    }
+    // Nothing attaches to a detached suffix. өөрийн is the row `öber-ün`, and a
+    // word-forming suffix fused onto that genitive (`öber-üntü`) is not a word;
+    // the row is already inflected, and a дагавар goes inside every inflection.
+    if (/-[^-]{2,}$/.test(out)) return undefined;
+    out = (/-[ae]$/.test(out) ? out.slice(0, -2) + out.slice(-1) : out) + suffix.classical;
   }
   return out;
 }
@@ -143,6 +168,19 @@ const offConvention = (segmentation: Segmentation): boolean =>
   );
 
 /**
+ * What a verb reading inherits from the tier its stem came from. A stem is
+ * never guessed — `verb-stem.ts` only indexes attested infinitives — so the
+ * `guess` entry exists to keep the record total, not because it is reachable.
+ */
+const VERB_STEM_PRIOR: Record<Provenance, number> = {
+  lexicon: 1,
+  harvested: HARVESTED_PRIOR,
+  attested: ATTESTED_STEM_PRIOR,
+  toli: TOLI_PRIOR,
+  guess: 0,
+};
+
+/**
  * Every plausible traditional-script reading of one Cyrillic word, unranked.
  * Candidates that fail to romanize are dropped rather than emitted broken.
  */
@@ -157,7 +195,8 @@ export function buildCandidates(word: string): Candidate[] {
         if (classical === undefined) continue;
         let script: string;
         try {
-          script = toScript(classical);
+          // An attested reading can be two words — see `wordsToScript`.
+          script = wordsToScript(classical);
         } catch {
           continue;
         }
@@ -193,7 +232,17 @@ export function buildCandidates(word: string): Candidate[] {
   // verb reading off a curated stem — while the toli offers the rarer `aqiyad`
   // ("small, tiny") as a bare headword. Below, the two compete on score and
   // the curated stem wins; with the toli in this gate, only the toli existed.
-  if (!found.some((c) => c.provenance === 'lexicon' || c.provenance === 'harvested')) {
+  //
+  // ⚠ `attested` holds it shut only as a WHOLE word. An attested row used as a
+  // stem is the same kind of weak claim as a `toli` headword, and it closed
+  // this gate the same way the first time it was tried: яваа is attested, so
+  // яваад became яваа + dative `yabuγ-a-du` and the converb `yabuγad` — a
+  // reader's ruling — was never built.
+  const settled = (c: Candidate): boolean =>
+    c.provenance === 'lexicon' ||
+    c.provenance === 'harvested' ||
+    (c.provenance === 'attested' && c.segmentation.suffixes.length === 0);
+  if (!found.some(settled)) {
     const verb = parseVerb(normalized);
     if (verb !== undefined) {
       try {
@@ -201,7 +250,7 @@ export function buildCandidates(word: string): Candidate[] {
           classical: verb.classical,
           script: toScript(verb.classical),
           prior:
-            (verb.stem.provenance === 'lexicon' ? 1 : HARVESTED_PRIOR) *
+            VERB_STEM_PRIOR[verb.stem.provenance] *
             verb.suffix.share *
             (verb.restored ? RESTORED_DISCOUNT : 1),
           confidence: 0,
@@ -227,7 +276,28 @@ function dedupe(candidates: readonly Candidate[]): Candidate[] {
   return [...best.values()];
 }
 
-const isStronger = (a: Candidate, b: Candidate): boolean =>
-  a.prior !== b.prior
+/**
+ * An attested whole word, as opposed to an attested row serving as a stem.
+ */
+const isAttestedWord = (c: Candidate): boolean =>
+  c.provenance === 'attested' && c.segmentation.suffixes.length === 0;
+
+/**
+ * Which of two candidates that reached the **same script** to keep.
+ *
+ * ⚠ An attested whole word always survives, whatever the priors say. The
+ * importer stores a row in two situations, and in the second the row spells
+ * exactly what one of our own readings spells: аавыгаа is attested
+ * `abu-yi-ban`, which аав + ыг + аа also derives — but that reading was losing
+ * the ranking to аав + гаа `abu-ban`, and that is why the row exists. Compared
+ * on raw prior, the derived twin (a curated stem, 1.0) beat the row (0.9), the
+ * row was dropped here as a duplicate, and the twin then lost to `abu-ban`
+ * exactly as before: the row was stored for nothing. The two are the same
+ * answer; what the row adds is the standing to win.
+ */
+const isStronger = (a: Candidate, b: Candidate): boolean => {
+  if (isAttestedWord(a) !== isAttestedWord(b)) return isAttestedWord(a);
+  return a.prior !== b.prior
     ? a.prior > b.prior
     : a.segmentation.suffixes.length < b.segmentation.suffixes.length;
+};
