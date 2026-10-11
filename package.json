@@ -60,12 +60,12 @@
     "classical-mongolian"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
-    "@types/node": "^26.1.1",
+    "@biomejs/biome": "^2.5.15",
+    "@types/node": "^26.6.5",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.11"
   },
   "dependencies": {
-    "@gege-mn/mongol-bichig": "^0.2.2"
+    "@gege-mn/mongol-bichig": "^0.2.3"
   }
 }
