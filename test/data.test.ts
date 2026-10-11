@@ -106,7 +106,7 @@ describe('suffixes', () => {
 
   it('conditions the -ууд plural on what the Classical stem ends in', () => {
     const ud = suffixes.filter((s) => s.cyrillic === 'ууд');
-    expect(ud.map((s) => s.after).sort()).toEqual(['consonant', 'vowel']);
+    expect(ud.map((s) => s.after).sort()).toEqual(['consonant-not-n', 'n', 'vowel']);
   });
 
   it('never produces a bare MVS on its own', () => {

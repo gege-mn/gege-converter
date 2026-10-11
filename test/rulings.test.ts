@@ -33,8 +33,8 @@ describe('confirmed by a bichig reader', () => {
   });
 
   it('handles the derived plural мэргэжилтнүүд', () => {
-    // Reader-supplied form, not Tungaamal's — Tungaamal has no row for this word.
-    same('мэргэжилтнүүд', 'merγeǰilten-üd');
+    // Reader-supplied 2026-10-11, replacing the bare `üd` given on 2026-07-26.
+    same('мэргэжилтнүүд', 'merγeǰilten-nügüd');
   });
 
   it('absorbs a plain vowel after an iotated one', () => {

@@ -40,7 +40,12 @@ what taking it whole would be worth.
 
 The ten clusters account for 408 of the 423; the remainder did not group.
 
-### ⚠ The plural cluster was attempted on 2026-08-10 and reverted
+### The plural cluster: attempted 2026-08-10, reverted, then settled 2026-10-11
+
+**Settled.** The reader re-ruled on 2026-10-11: мэргэжилтнүүд is
+`merγeǰilten-nügüd`, and an NA-final stem takes `nuγud`/`nügüd`. The split
+described below is now in `src/data/suffixes.ts`. What follows is the record
+of why it was reverted the first time.
 
 Worth reading before anyone tries it again, because the evidence for it is
 strong, entirely one-sided, and wrong.

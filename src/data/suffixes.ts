@@ -522,43 +522,21 @@ export const suffixes: readonly SuffixEntry[] = [
 
   // Plural — олон тооны дагавар. Written DETACHED, after a connector, like
   // the case suffixes. The allomorph is chosen by the Classical stem: ud/üd
-  // after a consonant, nuγud/nügüd after a vowel. That condition is what keeps
-  // a chachlag stem well-formed — харууд is qar-a + nuγud (хар-а нугуд), never
-  // qar-a + ud, which would strand the connector. Confirmed 2026-07-26.
+  // after a consonant other than n, nuγud/nügüd after a vowel or n. The vowel
+  // half is what keeps a chachlag stem well-formed — харууд is qar-a + nuγud
+  // (хар-а нугуд), never qar-a + ud, which would strand the connector.
   //
-  // ⚠ **An NA-final condition was tried on 2026-08-10 and REVERTED. Do not
-  // re-derive it from the gold set — the gold is wrong here, or at least it is
-  // not what the reader writes.**
-  //
-  // The evidence for it looks overwhelming and is entirely Tungaamal's. Counted
-  // over the whole inflected gold set by the Classical stem's final letter:
-  //
-  //   n-final          →  nuγud   37   ud/üd   0
-  //   vowel-final      →  nuγud  176   ud/üd   0
-  //   other consonant  →  nuγud   16   ud/üd 160
-  //
-  // 37/0 reads as categorical, and splitting `consonant` into
-  // `consonant-not-n` + `n` duly fixed настангууд (`nasutan-ud` → the gold's
-  // `nasutan-nuγud`) and simulated at about +1.5pp with no regression on the
-  // gold set at all.
-  //
-  // It regressed a **reader-confirmed** ruling: мэргэжилтнүүд is
-  // `merγeǰilten-üd`, reader-supplied on 2026-07-26 for a word Tungaamal has no
-  // row for. That stem ends in NA and takes the bare `üd`.
-  //
-  // The two cannot be told apart. настан and мэргэжилтэн are the **same
-  // morphology** — an agentive in -тан/-тэн — so no condition available here
-  // separates them, and the only real difference is which source the answer
-  // came from. `test/rulings.test.ts` outranks the gold by construction, so the
-  // bare form stays. What this actually shows is that ~37 gold rows disagree
-  // with the reader on the plural of an n-final stem, which is a question for
-  // an ask page, not a condition for this table.
+  // The n half was tried on 2026-08-10 and reverted, because the reader had
+  // given мэргэжилтнүүд as `merγeǰilten-üd` on 2026-07-26 against 37 gold rows
+  // with nuγud. The reader re-ruled on 2026-10-11: it is `merγeǰilten-nügüd`,
+  // and n-final stems take nuγud/nügüd, as the national rule says (Appendix 1
+  // §1.1.1 #1) and as every gold row already had it.
   {
     cyrillic: 'ууд',
     classical: 'ud',
     category: 'plural',
     harmony: 'masculine',
-    after: 'consonant',
+    after: 'consonant-not-n',
     separate: true,
   },
   {
@@ -570,11 +548,19 @@ export const suffixes: readonly SuffixEntry[] = [
     separate: true,
   },
   {
+    cyrillic: 'ууд',
+    classical: 'nuγud',
+    category: 'plural',
+    harmony: 'masculine',
+    after: 'n',
+    separate: true,
+  },
+  {
     cyrillic: 'үүд',
     classical: 'üd',
     category: 'plural',
     harmony: 'feminine',
-    after: 'consonant',
+    after: 'consonant-not-n',
     separate: true,
   },
   {
@@ -583,6 +569,14 @@ export const suffixes: readonly SuffixEntry[] = [
     category: 'plural',
     harmony: 'feminine',
     after: 'vowel',
+    separate: true,
+  },
+  {
+    cyrillic: 'үүд',
+    classical: 'nügüd',
+    category: 'plural',
+    harmony: 'feminine',
+    after: 'n',
     separate: true,
   },
   {

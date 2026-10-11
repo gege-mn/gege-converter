@@ -2,6 +2,12 @@
 
 ## 0.6.0 — unreleased
 
+- **Plural after a stem in н** is `nuγud`/`nügüd`, not the bare `ud`/`üd`:
+  мэргэжилтнүүд is `merγeǰilten-nügüd`, настангууд `nasutan-nuγud`. A reader
+  re-ruled on 2026-10-11, replacing the 2026-07-26 answer that had kept the
+  bare form; the reference word list already had it this way on all 37 of its
+  n-final stems.
+
 - **The hyphen of a compound name** (Алтан-Од) is written as the Mongolian
   hyphen U+1806, unspaced, under `punctuation: 'mongolian'`; `'ascii'` reads
   it back as `-`. Only a hyphen directly between two capitalised words is
