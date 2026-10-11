@@ -22,9 +22,16 @@ diagnostics-with-fixes model.
 | 2 | Normalize Cyrillic | `normalize.ts` |
 | 3 | Segment stem + suffix chain, all parses | `segment.ts` |
 | 4 | Resolve stem (lexicon, else flagged guess) | `stem.ts` |
-| 5–6 | Generate + assemble candidates | `generate.ts` |
-| 7 | Rank | `rank.ts` |
+| 5–6 | Generate + assemble candidates | `generate.ts`, `ordinal.ts` |
+| 7 | Rank, then collapse same-script readings | `rank.ts` |
 | 8 | Validate (injected `validate` hook) | consumer |
+
+Stage 5–6 is where `ConvertOptions.stylisticSuffixes` lands: `assemble` joins
+the -тай³ rows, `ordinal.ts` joins the ordinals on the resolved stem (they have
+no suffix rows), and both emit the spelling asked for plus the other one at
+`OFF_CONVENTION`. Same-script readings are collapsed in stage 7, **after**
+scoring — an attached spelling often coincides with a letter-by-letter guess,
+and only the ranker knows which of the two is the stronger claim.
 
 Stage 8 is a **hook, not an import** — that is what keeps the core
 free of the linter while letting consumers wire in its `lint`.

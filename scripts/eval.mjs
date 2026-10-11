@@ -124,7 +124,12 @@ function evaluate(gold, { collectMisses = false } = {}) {
     else stats.wrong += 1;
 
     const stem = goldStem(g.classical);
-    const reachable = segment(g.cyrillic).some((s) => sameWord(assemble(stem, s), g.classical));
+    // Either style: the oracle asks what the table can write, and the gold
+    // spells -тай³ both ways. Only EMITTED and `best segmented` are tied to
+    // the default style.
+    const reachable = segment(g.cyrillic).some((s) =>
+      ['attached', 'joined'].some((style) => sameWord(assemble(stem, s, style), g.classical)),
+    );
     if (reachable) stats.oracle += 1;
     else {
       stats.unreachable += 1;

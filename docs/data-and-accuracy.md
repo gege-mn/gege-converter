@@ -209,6 +209,11 @@ The session started at detached 73.7% by the same script, so the day is
 for one turn while the output got better, which is the subject of the roadmap's
 `-тай³` entry. Do not read the whole-fixture line alone.
 
+> **2026-10-11:** it moved again, the same way and for the same non-reason.
+> -тай³ attaches by default now (`stylisticSuffixes`), so `eval.mjs` reads
+> detached 73.7% → 69.6% emitted, attached 0.7% → 77.3%, whole 63.2% → 70.7%.
+> `eval-corpus.mjs` is unmoved at 69.3% because it folds connectors.
+
 ⚠ **73.7% is an ambiguous figure in this repo and always needs its script
 named.** It is both the session-start `eval.mjs` reading *and* the current
 `candidates[0]` reading of the same 1,611 forms (1,188). Those are different

@@ -356,6 +356,15 @@ export const suffixes: readonly SuffixEntry[] = [
   // running text, where the comitative is 27.6% — a large minority that has to
   // keep winning where it is right, which is what the losing row is for.
   //
+  // ## The join is a style, ruled 2026-10-11
+  //
+  // The reader: joined and attached are both correct, **but legal and formal
+  // documents must attach**. So every row below is `stylistic`, and the join
+  // is `ConvertOptions.stylisticSuffixes` — attached by default — not the
+  // row's `separate`, which stays as the spelling §2.3.6 gives that reading.
+  // The shares are untouched: they are still what running text measured.
+  // `generate.ts` says how the two row sets carry the two spellings.
+  //
   // Comitative — хамтрахын тийн ялгал. Дагуулж (§2.3.1).
   {
     cyrillic: 'тай',
@@ -364,6 +373,7 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'masculine',
     separate: true,
     share: 0.28,
+    stylistic: true,
   },
   {
     cyrillic: 'той',
@@ -372,6 +382,7 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'masculine',
     separate: true,
     share: 0.28,
+    stylistic: true,
   },
   {
     cyrillic: 'тэй',
@@ -380,6 +391,7 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'feminine',
     separate: true,
     share: 0.28,
+    stylistic: true,
   },
   {
     cyrillic: 'төй',
@@ -388,11 +400,12 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'feminine',
     separate: true,
     share: 0.28,
+    stylistic: true,
   },
 
-  // Adjective-forming -тай³ — дагавар, залгаж (§2.3.6). Same Classical letters,
-  // no connector: хэрэгтэй is `keregtei`, one word, where the comitative хүнтэй
-  // is `qümün-tei`.
+  // Adjective-forming -тай³ — дагавар, залгаж (§2.3.6). Same Classical letters;
+  // the rulebook writes хэрэгтэй `keregtei`, one word, where it writes the
+  // comitative хүнтэй `qümün-tei`.
   //
   // `derivational` is not decoration. It puts these rows in SLOT 0, the
   // innermost slot, so the segmenter can only build this reading directly on a
@@ -409,6 +422,7 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'masculine',
     separate: false,
     share: 0.72,
+    stylistic: true,
   },
   {
     cyrillic: 'той',
@@ -417,6 +431,7 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'masculine',
     separate: false,
     share: 0.72,
+    stylistic: true,
   },
   {
     cyrillic: 'тэй',
@@ -425,6 +440,7 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'feminine',
     separate: false,
     share: 0.72,
+    stylistic: true,
   },
   {
     cyrillic: 'төй',
@@ -433,6 +449,7 @@ export const suffixes: readonly SuffixEntry[] = [
     harmony: 'feminine',
     separate: false,
     share: 0.72,
+    stylistic: true,
   },
 
   // Reflexive-possessive — хамаатуулах нөхцөл. ban/ben after a vowel,

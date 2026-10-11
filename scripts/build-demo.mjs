@@ -118,10 +118,13 @@ const table = SAMPLES.map(({ cy, group }) => {
 const ambiguous = analyzeWord(AMBIGUOUS_WORD).candidates;
 
 // Everything the page shows in script form, for the two global audits.
+// buildCandidates no longer collapses same-script candidates; ranking does.
+const distinct = (cs) => [...new Map(cs.map((c) => [c.script, c])).values()];
+
 const allScripts = [
   ...table.flatMap((r) => r.candidates.map((c) => c.script)),
   ...ambiguous.map((c) => c.script),
-  ...buildCandidates(TRACE_WORD).map((c) => c.script),
+  ...distinct(buildCandidates(TRACE_WORD)).map((c) => c.script),
   convert(SENTENCE),
 ];
 
@@ -151,7 +154,7 @@ const traceStems = [...new Set(traceSegments.map((s) => s.stem))].map((stem) => 
   stem,
   matches: resolveStem(stem),
 }));
-const traceBuilt = buildCandidates(TRACE_WORD);
+const traceBuilt = distinct(buildCandidates(TRACE_WORD));
 const traceRanked = analyzeWord(TRACE_WORD).candidates;
 
 // ---------------------------------------------------------------- HTML ----

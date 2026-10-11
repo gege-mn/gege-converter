@@ -81,8 +81,16 @@ export const frequencyRanker: Ranker = {
 };
 
 /**
- * Sort best-first, keep at most `maxCandidates`, and normalise the kept
- * scores into confidences summing to 1.
+ * Sort best-first, collapse readings that reached the same script, keep at
+ * most `maxCandidates`, and normalise the kept scores into confidences summing
+ * to 1.
+ *
+ * Collapsing happens here, after scoring, so the survivor of a same-script
+ * pair is the one the ranker rates higher. It used to happen on `prior` before
+ * ranking, and the two disagree: an unsegmented guess carries a larger prior
+ * than a harvested stem under a 0.28 share and still scores below it, so the
+ * guess survived, reported `guess` for a dictionary word, and lost to a rival
+ * the real reading beats.
  */
 export function rankCandidates(
   candidates: readonly Candidate[],
@@ -90,9 +98,15 @@ export function rankCandidates(
   context: RankContext,
   maxCandidates: number,
 ): Candidate[] {
+  const seen = new Set<string>();
   const scored = candidates
     .map((candidate) => ({ candidate, score: Math.max(0, ranker.score(candidate, context)) }))
     .sort((a, b) => b.score - a.score)
+    .filter(({ candidate }) => {
+      if (seen.has(candidate.script)) return false;
+      seen.add(candidate.script);
+      return true;
+    })
     .slice(0, maxCandidates);
 
   const total = scored.reduce((sum, s) => sum + s.score, 0);

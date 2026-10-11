@@ -13,7 +13,7 @@ list**, and both distort in ways that have already cost this project real time:
 | source | size | what is wrong with it |
 |---|---|---|
 | harvested lexicon | ~30k rows | Tungaamal output — a real converter that disagrees with us on documented points, reviewed by nobody |
-| inflected gold | 1,884 forms | built from a **lemma dictionary**; 273 of its rows are the attached -тай³ class and score **0.0%**, because a lemma list only carries the adjectival ones as headwords |
+| inflected gold | 1,884 forms | built from a **lemma dictionary**; 273 of its rows are the attached -тай³ class, because a lemma list only carries the adjectival ones as headwords — they scored **0.0%** while the default detached and **77.3%** since 2026-10-11, and the 160 detached -тай³ rows moved the other way; a style swap, not accuracy |
 | verb gold | 197 forms | same word-list shape, so it says nothing about running text |
 | `test/rulings.test.ts` | ~90 assertions | genuinely ground truth, and it costs a human's attention every single round |
 

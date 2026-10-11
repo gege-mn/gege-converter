@@ -125,6 +125,16 @@ the time. The end-state number that *is* reproducible is the 75.9% above.
 
 ## ⚠ The `-тай³` 12pp is withdrawn — a reader ruled, 2026-08-10
 
+> **Update 2026-10-11: the default flipped to залгаж, on a second ruling.**
+> Formal documents must attach, so attached is the default and
+> `stylisticSuffixes: 'joined'` is the old spelling. Point 3 below is done for
+> -тай³ — the stranded MVS is fused (`sanaγatai`) — and **not** for `-лаг⁴`,
+> so `pnpm lint:output` is still at 19. Points 1 and 2 stand exactly as
+> written and now cut the other way: whole fixture 63.2% → **70.7%** emitted,
+> detached half 73.7% → **69.6%**, attached half 0.7% → **77.3%**
+> (`node scripts/eval.mjs`), none of which is accuracy. Full ruling in
+> `docs/rulings.md`.
+
 **Everything below that treats the 273 attached gold rows as ~12pp of available
 accuracy is superseded.** The full ruling is in `docs/rulings.md`; the part that
 matters for planning:

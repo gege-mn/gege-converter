@@ -39,6 +39,13 @@ import type { ScriptStyle, Token } from './types.js';
 const MONGOLIAN_ZERO = 0x1810;
 
 /**
+ * U+1806, the script's own hyphen, written with no space either side: the
+ * dash between the parts of a compound name whose second part begins with a
+ * vowel (repository owner, 2026-10-11).
+ */
+export const NAME_HYPHEN = '\u1806';
+
+/**
  * ASCII punctuation → its traditional-script counterpart.
  *
  * The two question/exclamation marks are fullwidth CJK forms rather than
@@ -55,9 +62,10 @@ const TO_MONGOLIAN: ReadonlyMap<string, string> = new Map([
 ]);
 
 /** The inverse, for reading traditional-script input back to ASCII. */
-const TO_ASCII: ReadonlyMap<string, string> = new Map(
-  [...TO_MONGOLIAN].map(([ascii, mongolian]) => [mongolian, ascii]),
-);
+const TO_ASCII: ReadonlyMap<string, string> = new Map([
+  ...[...TO_MONGOLIAN].map(([ascii, mongolian]): [string, string] => [mongolian, ascii]),
+  [NAME_HYPHEN, '-'],
+]);
 
 /** `...` is written as one ellipsis before the per-character pass sees it. */
 const ASCII_ELLIPSIS = /\.\.\./g;

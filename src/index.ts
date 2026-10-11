@@ -1,10 +1,10 @@
 import { splitClitics } from './clitics.js';
 import { buildCandidates } from './generate.js';
 import { attachParticles, particleCandidate } from './particles.js';
-import { renderNonWord } from './punctuation.js';
+import { NAME_HYPHEN, renderNonWord } from './punctuation.js';
 import { frequencyRanker, rankCandidates } from './rank.js';
 import { tokenize } from './tokenize.js';
-import type { AnalyzedToken, ConvertOptions } from './types.js';
+import type { AnalyzedToken, ConvertOptions, Token } from './types.js';
 import { verbEnding } from './verb.js';
 
 export { harmonyAgrees, harmonyOf, MVS, NNBSP } from './chars.js';
@@ -60,7 +60,7 @@ export function analyze(text: string, options: ConvertOptions = {}): AnalyzedTok
     const particle = particleCandidate(tokens, index);
     if (particle !== undefined) return { token, candidates: [{ ...particle, confidence: 1 }] };
 
-    let candidates = buildCandidates(token.text);
+    let candidates = buildCandidates(token.text, options);
     if (validate !== undefined) {
       const valid = candidates.filter((c) => validate(c.script));
       // Keep the invalid set when nothing survives: flagging a suspect
@@ -86,13 +86,27 @@ export function analyze(text: string, options: ConvertOptions = {}): AnalyzedTok
  * nothing: digits and punctuation stay ASCII unless `options.digits` or
  * `options.punctuation` asks for the traditional forms.
  */
+const isName = (token: Token | undefined): boolean =>
+  token?.kind === 'word' && /^\p{Lu}\p{Ll}/u.test(token.text);
+
 export function convert(text: string, options: ConvertOptions = {}): string {
   const digits = options.digits ?? 'ascii';
   const punctuation = options.punctuation ?? 'ascii';
   return analyze(text, options)
-    .map(
-      (analyzed) =>
-        analyzed.candidates[0]?.script ?? renderNonWord(analyzed.token, digits, punctuation),
-    )
+    .map((analyzed, i, all) => {
+      const script = analyzed.candidates[0]?.script;
+      if (script !== undefined) return script;
+      // Only between two capitalised words: a compound name such as Алтан-Од.
+      // Elsewhere a hyphen has other jobs (НҮБ-д, хэл-соёл, ranges) and is left alone.
+      if (
+        punctuation === 'mongolian' &&
+        analyzed.token.text === '-' &&
+        isName(all[i - 1]?.token) &&
+        isName(all[i + 1]?.token)
+      ) {
+        return NAME_HYPHEN;
+      }
+      return renderNonWord(analyzed.token, digits, punctuation);
+    })
     .join('');
 }

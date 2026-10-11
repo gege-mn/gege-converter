@@ -152,9 +152,15 @@ const codePoints = (s) =>
   [...s].map((c) => `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`).join(' ');
 
 async function analyzeRequest(body) {
-  const { text = '', digits = 'ascii', punctuation = 'ascii', model = 'off' } = body;
+  const {
+    text = '',
+    digits = 'ascii',
+    punctuation = 'ascii',
+    stylisticSuffixes = 'attached',
+    model = 'off',
+  } = body;
   const lib = await loadLibrary();
-  const options = { digits, punctuation };
+  const options = { digits, punctuation, stylisticSuffixes };
 
   const analyzed = lib.analyze(text, options);
 
@@ -319,6 +325,7 @@ const PAGE = `<!doctype html>
     </label>
     <label><input type="checkbox" id="digits"> Mongolian digits</label>
     <label><input type="checkbox" id="punct"> Mongolian punctuation</label>
+    <label><input type="checkbox" id="joined"> Connector-join -тай / ordinals</label>
     <span id="hint"></span>
   </div>
 </header>
@@ -351,6 +358,7 @@ const run = async () => {
       text,
       digits: $('digits').checked ? 'mongolian' : 'ascii',
       punctuation: $('punct').checked ? 'mongolian' : 'ascii',
+      stylisticSuffixes: $('joined').checked ? 'joined' : 'attached',
       model: $('model').value,
     }),
   });
@@ -444,6 +452,7 @@ let timer;
 $('in').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 120); });
 $('digits').addEventListener('change', run);
 $('punct').addEventListener('change', run);
+$('joined').addEventListener('change', run);
 render();
 </script></body></html>`;
 

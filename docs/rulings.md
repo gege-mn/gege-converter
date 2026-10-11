@@ -101,7 +101,9 @@ All confirmed 2026-07-26/27. Each overrode something this project had wrong.
 - **Case suffixes are all detached** — confirmed correct, and extended:
   **always detach, even in the singular**, so аавтай is `abu` + connector +
   `tai`, never `abutai`. Tungaamal attaches ~70% of comitatives and 75% of dative
-  `-т`; we never do. Lexicalised forms (жаргалтай, хатагтай, төстэй) are
+  `-т`; we never do. **Superseded for the comitative, 2026-10-11** — it attaches
+  by default now, `abutai`; see the last section of this file. The other cases
+  are unaffected. Lexicalised forms (жаргалтай, хатагтай, төстэй) are
   single words, not productive comitatives, and stay whole.
 - **ᠶᠤᠮ (yum) is invariantly masculine** (2026-07-27). It is a **сул үг** — a
   particle — and a particle does not take harmony from the word before it. We
@@ -1735,7 +1737,9 @@ does. The forced-pairing row is simply the one that measures it on running
 text instead of on a wordlist.
 
 The standing choice stays **дагуулж (detached)**, which is what the reader
-reports they chose.
+reports they chose. **Superseded 2026-10-11: the choice is now залгаж, and it
+is an option** — see the last section of this file. The measurements above
+stand; they were never what decided it.
 
 **3. The second half of the answer is an unimplemented prerequisite.** гэдэс
 жийрэглэх applies when attaching, and this converter does not implement it. Our
@@ -1746,7 +1750,8 @@ as `unknown-suffix` — the same defect already recorded for `-лаг⁴`. Verif
 reading off, which is where it stands.
 
 So the залгаж reading ships as an alternative candidate (`OFF_CONVENTION` in
-`src/generate.ts`), never as the default. It is deliberately **not** expressed
+`src/generate.ts`), never as the default. (Until 2026-10-11, when the stranded
+MVS was fixed and the default flipped.) It is deliberately **not** expressed
 as a `share`, because `SuffixEntry.share` is documented as a count over running
 text and explicitly "not a judgement" — folding a house policy into it would
 falsify the data in order to get a ranking out of it.
@@ -1768,3 +1773,80 @@ row you read.
 This is one reader question, not a rule to derive, and CLAUDE.md's standing ban
 on deriving rules from foreign words applies to every word in that list. Queue
 it as an ask; do not act on the 1.74pp.
+
+## -тай³ and the ordinals attach by default — ruled 2026-10-11
+
+The reader, on the comitative -тай/-тэй/-той (`tai`/`tei`) and the ordinals
+-дугаар/-дүгээр (`duγar`/`düger`) and -дахь/-дэх (`daqi`/`deqi`): each may be
+written joined to the stem with the suffix connector (`aq-a-tai`) or attached
+as one word (`aqatai`). It is a stylistic choice, **but legal and formal
+documents must attach them.**
+
+Decision: **attach by default**, with `ConvertOptions.stylisticSuffixes:
+'joined'` for the other spelling. This supersedes the 2026-08-10 house choice
+to detach (T1/T2 above) and the older "always detach, even in the singular"
+for the comitative. It does not touch the other case suffixes.
+
+| | attached (default) | `'joined'` |
+|---|---|---|
+| ахтай | `aqatai` | `aq-a-tai` |
+| гэртэй | `gertei` | `ger-tei` |
+| ахтайгаа | `aqatai-ban` | `aq-a-tai-ban` |
+| аавуудтай | `abu-nuγud-tai` | `abu-nuγud-tai` |
+| гуравдугаар | `γurbaduγar` | `γurba-duγar` |
+
+### What the ruling says, and what was decided around it
+
+**Ruled:** both spellings are legal; formal text attaches; ахтай attached is
+`aqatai`. A separated final vowel is final only while nothing follows it, so
+attaching makes it medial and the stem's connector goes. This is the stranded
+MVS that blocked the attached default on 2026-08-10 (`sanaγ-atai`), now gone
+for -тай³.
+
+**Decided here, not ruled — each is a question for the reader if it matters:**
+
+1. **After a connector-joined suffix, -тай³ stays joined under both styles.**
+   аавуудтай is `abu-nuγud-tai`. Attaching would write `abu-nuγudtai`, which
+   gege-linter reports as `unknown-suffix`, and the gold has 0 attached out of
+   55 plural + -тай³ rows. But the ruling says formal documents *must* attach,
+   and it was not asked whether that reaches a comitative standing after a
+   plural.
+2. **No linking vowel is inserted when attaching.** The 2026-08-10 answer said
+   *"when attaching, гэдэс жийрэглэх rule apply"*, and this file's own section
+   on гэдэс reads that term as the linking u/ü. Attached -тай³ here is the
+   Classical stem plus `tai`/`tei` and nothing else — which is what the 79
+   harvested headwords in -тай³ show: nothing goes in after a дэвсгэр
+   consonant (`ǰirγaltai`, `γamtai`, `sairtai`), and a vowel-final Classical
+   stem supplies its own (`yoǰutai`, `onubčitai`). A **guessed** stem has no
+   such vowel to supply.
+3. **The lexicalised/comitative distinction no longer changes the default
+   spelling.** Both attach. The code still has both row sets
+   (`category: 'comitative'` and `'derivational'`), and a whole-word headword
+   (жаргалтай `ǰirγaltai`) is still one word under `'joined'` too.
+4. **Free-standing дахь/дэх is untouched.** Cyrillic usually writes it as its
+   own word (хоёр дахь, 3 дахь), and it converts as its own word after a
+   space, as before. Whether bichig should join it to the numeral there is the
+   ч question (`particles.ts`) and was not asked.
+
+### Ordinals are restyled, not derived
+
+There are no suffix rows for the ordinals. гуравдугаар is `γurbaduγar` because
+the harvest memorised it, and the join is set on that stem when the host is a
+numeral (`src/ordinal.ts`). An ordinal nothing memorised — зуудахь — is still
+spelled by the guesser from the whole word (`ǰudaqi`; the numeral is `ǰaγun`),
+attached or joined as asked, with the wrong stem either way.
+
+Rows would fix that and were left out on purpose. The 16 harvested ordinals
+agree on one shape — the numeral without its final н, `γurba-`, `arba-`,
+`dörbe-`, `yisü-` — which is a rule read off a word list, the thing
+`.claude/rules/data-rows.md` says to check before generalising; хоёр drops an
+р instead (`qoyaduγar`); and the toli has `doluduγar` where the harvest has
+`doluγaduγar`. And -дэх on нэг collides with the verb нэгдэх. Ask first.
+
+### The other attached suffix still strands its connector
+
+`-лиг` on a chachlag stem is unchanged: тоосголог is still `toγusγ-alig`, and
+all 19 `unknown-suffix` warnings from `pnpm lint:output` are that shape. The
+same one-line fusion would clear them, and the roadmap has said since
+2026-08-10 that this is one rule gating both — but the ruling named six
+endings, and `-лиг` is not one.

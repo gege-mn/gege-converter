@@ -101,20 +101,19 @@ describe('inflected forms vs Tungaamal gold', () => {
   });
 
   /**
-   * ⚠ **This half scores 0.0% on purpose, and that is not a bug to fix.**
+   * ⚠ **A floor on reachability, not on agreement — on purpose.**
    *
-   * The 273 attached rows all write -тай³ залгаж. A floor of 0.55 stood here
-   * for a few hours on 2026-08-10, when the залгаж reading was made the
-   * default and this half went 0.0% → 66.7%. The reader then ruled (T1/T2)
-   * that joined and detached are *both correct* — *"it's simply a choice. we
-   * chose to detach"* — so these rows record the reference converter's house
-   * style, not a fact about Mongolian, and matching them is not accuracy.
+   * The 273 attached rows all write -тай³ залгаж; the 160 -тай³ rows in the
+   * detached half write it дагуулж. A reader ruled twice (2026-08-10,
+   * 2026-10-11) that both spellings are correct, so which half we match is the
+   * reference converter's house style against ours and not accuracy: with
+   * attached as the default this half emits 77.3% and the detached half gives
+   * up 67 forms, and `stylisticSuffixes: 'joined'` swaps them back.
    *
-   * What is asserted instead is the thing that would be a real regression: the
-   * залгаж reading must remain **reachable**, because the reader confirms it is
-   * correct and only ranking keeps it second. If it stops being built at all,
-   * this fails — while conforming to the fixture's style never becomes a
-   * target. `test/convert.test.ts` guards the same property per word.
+   * What is asserted is the thing that would be a real regression under either
+   * default: the залгаж spelling must remain **reachable**. Conforming to the
+   * fixture's style never becomes a target. `test/convert.test.ts` guards the
+   * same property per word.
    */
   it('keeps the attached half reachable, without making it the answer', () => {
     const reachable = attached.filter((g) =>
@@ -161,7 +160,13 @@ describe('inflected forms vs Tungaamal gold', () => {
     // and it is the ceiling the guesser fails to approach.
     const reachable = detached.filter((g) => {
       const stem = goldStem(g.classical);
-      return segment(g.cyrillic).some((s) => sameWord(assemble(stem, s), g.classical));
+      // Either style: this asks what the table can write, and the detached
+      // half spells -тай³ joined while the default is attached.
+      return segment(g.cyrillic).some((s) =>
+        (['attached', 'joined'] as const).some((style) =>
+          sameWord(assemble(stem, s, style), g.classical),
+        ),
+      );
     });
     expect(reachable.length / detached.length).toBeGreaterThanOrEqual(0.85);
   });

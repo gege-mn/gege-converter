@@ -123,6 +123,7 @@ convert(text, {
   maxCandidates,   // default 5
   digits,          // 'ascii' (default) | 'mongolian'
   punctuation,     // 'ascii' (default) | 'mongolian'
+  stylisticSuffixes, // 'attached' (default) | 'joined'
 });
 ```
 
@@ -131,6 +132,29 @@ charts record U+1810–1819 as "less used now" and UTN #57 §2.2.3 defers every
 numeral specification, so converting them by default would be inventing a
 convention. Digits are applied uniformly across the document, because mixing
 the two systems is exactly what gege-linter's `digit-consistency` rule flags.
+
+`stylisticSuffixes` covers the endings a bichig reader ruled a matter of style:
+the comitative -тай/-тэй/-той and the ordinals -дугаар/-дүгээр, -дахь/-дэх. Both
+spellings are correct Mongolian, **but legal and formal documents must attach
+them**, so that is the default; `'joined'` writes them after the suffix
+connector instead. `buildCandidates` and `assemble` take the same choice.
+
+| | `'attached'` (default) | `'joined'` |
+|---|---|---|
+| гэртэй | `gertei` | `ger-tei` |
+| ахтай | `aqatai` | `aq-a-tai` |
+| ахтайгаа | `aqatai-ban` | `aq-a-tai-ban` |
+| аавуудтай | `abu-nuγud-tai` | `abu-nuγud-tai` |
+| гуравдугаар | `γurbaduγar` | `γurba-duγar` |
+| 3-дугаар | unchanged | unchanged |
+
+Three things to know. A stem ending in a separated vowel gives up its connector
+when something is attached — ах is `aq-a`, ахтай is `aqatai`, never `aq-atai`.
+Only the join in front of the ending moves: a suffix stacked after it keeps its
+own rule, and an ending that follows a connector-joined suffix stays joined
+under both values. And whichever spelling you did not ask for is still returned
+by `analyze()` as a lower-ranked candidate. Ordinals are recognised on numeral
+hosts only, and an ordinal written after a digit is left exactly as before.
 
 Using the linter as a discriminator, which no other converter can offer:
 
@@ -253,6 +277,10 @@ Ordered by how much they cost.
   two suffixes — a contracted genitive (далайн) and a noun-to-adjective derivation
   (ус → усан) — and telling them apart needs stem metadata the dictionary does
   not yet carry.
+- **Ordinals have no morphology.** гуравдугаар is right because the harvest
+  memorised it; an ordinal it did not memorise (зуудахь) is spelled by the
+  guesser from the whole word and gets the numeral's stem wrong. The
+  `stylisticSuffixes` join is applied either way.
 - **Frequencies are hand-assigned**, not counted from a corpus.
 - **Loanwords needing variation selectors cannot be emitted at all** (автобус),
   about 6% of harvested rows.

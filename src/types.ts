@@ -6,6 +6,13 @@ export type TokenKind = 'word' | 'space' | 'punctuation' | 'number' | 'latin' | 
 /** How digits and punctuation are written in the output. See `punctuation.ts`. */
 export type ScriptStyle = 'ascii' | 'mongolian';
 
+/**
+ * How the endings that may legally be written either way are joined to what
+ * they follow: `'attached'` as one word (`aqatai`), `'joined'` after a suffix
+ * connector (`aq-a-tai`). See `ConvertOptions.stylisticSuffixes`.
+ */
+export type StylisticSuffixes = 'attached' | 'joined';
+
 /** One piece of the input, positioned in Unicode code points (not UTF-16 units). */
 export interface Token {
   kind: TokenKind;
@@ -94,8 +101,17 @@ export interface SuffixEntry {
   /**
    * Written detached, after a suffix connector (MVS). True for the case
    * suffixes and clitics; false for suffixes fused into the stem word.
+   *
+   * On a `stylistic` row this is the spelling rulebook §2.3.6 assigns to the
+   * row's reading and **not** what is emitted — the caller's style decides.
    */
   separate: boolean;
+  /**
+   * Both spellings of this ending are correct, so the join is a style and not
+   * a fact about the row: `ConvertOptions.stylisticSuffixes` picks it, and the
+   * other spelling stays a lower-ranked candidate. Set on the -тай³ rows.
+   */
+  stylistic?: boolean;
   /**
    * Share of this Cyrillic surface's occurrences in **running text** that took
    * this row's reading, 0-1. Omitted means 1 — the row is the only reading of
@@ -343,4 +359,15 @@ export interface ConvertOptions {
    * other mark passes through untouched.
    */
   punctuation?: ScriptStyle;
+  /**
+   * How to join the endings a reader ruled a matter of style (2026-10-11): the
+   * comitative -тай³ and the ordinals -дугаар², -дахь². Default `'attached'`,
+   * one word (ахтай `aqatai`), which is what legal and formal documents
+   * require; `'joined'` writes them after a suffix connector (`aq-a-tai`).
+   *
+   * Only that one join moves. A suffix stacked after the ending keeps its own
+   * rule (`aqatai-ban`), and an ending that itself follows a connector-joined
+   * suffix stays joined under both values (`abu-nuγud-tai`). See `generate.ts`.
+   */
+  stylisticSuffixes?: StylisticSuffixes;
 }

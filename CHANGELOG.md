@@ -1,5 +1,101 @@
 # Changelog
 
+## 0.6.0 — unreleased
+
+- **The hyphen of a compound name** (Алтан-Од) is written as the Mongolian
+  hyphen U+1806, unspaced, under `punctuation: 'mongolian'`; `'ascii'` reads
+  it back as `-`. Only a hyphen directly between two capitalised words is
+  touched, so НҮБ-д and хэл-соёл keep theirs. The
+  default `'ascii'` style still passes the hyphen through as typed.
+
+**⚠ Default output changes.** The comitative -тай/-тэй/-той is now written
+**attached** to its stem by default, where 0.5.0 wrote it after a suffix
+connector: гэртэй is `gertei`, not `ger-tei`. A new option,
+`stylisticSuffixes: 'attached' | 'joined'`, selects between them, and
+`'joined'` reproduces the 0.5.0 spelling. Minor rather than patch because the
+default moves and `SuffixEntry` gains a field; nothing is removed.
+
+The reader's ruling, 2026-10-11: for the comitative and for the ordinals
+-дугаар/-дүгээр and -дахь/-дэх, joined and attached are both correct and the
+choice is stylistic — **but legal and formal documents must attach them.** So
+attached is the default.
+
+Same scripts, same fixtures, only `src/` differing:
+
+| | 0.5.0 | this build | this build, `'joined'` |
+|---|---|---|---|
+| corpus words whose top reading changed (of 48,214) | — | **1,003** | 12 |
+| …of which only a connector moved | — | 1,001 (8,139 tokens) | 10 |
+| corpus, token-weighted — `eval-corpus.mjs` | 69.3% | 69.3% | — |
+| gold — all inflected forms (1,884), emitted | 63.2% | **70.7%** | 63.0% |
+| gold — detached half (1,611), emitted | 73.7% | **69.6%** | 73.5% |
+| gold — attached half (273), emitted | 0.7% | **77.3%** | 0.7% |
+| reader rulings | 160/160 | 160/160 | — |
+| `pnpm lint:output`, `unknown-suffix` | 19 | 19 | — |
+
+⚠ **Read the gold rows as a style swap, not as accuracy.** The fixture is one
+reference converter's output and it spells -тай³ both ways; matching its
+attached half costs its detached half 67 forms, and neither is a correctness
+measurement — the reader has said both spellings are right. `eval-corpus.mjs`
+does not move at all because it folds connectors away before comparing. With
+the connector **kept** in the comparison, that silver corpus writes -тай⁴
+connector-joined on 63.0% of tokens (5,872 of 9,327), so agreement on those
+tokens falls 44.0% → 30.0% and on all tokens 69.57% → 69.19%. The default now
+disagrees with that reference on purpose.
+
+### Added — `stylisticSuffixes`
+
+On `ConvertOptions`, and on the two exported functions that build a spelling:
+`buildCandidates(word, { stylisticSuffixes })` and
+`assemble(stem, segmentation, stylisticSuffixes)`. The dev server
+(`pnpm dev`) has a checkbox for it. The spelling not asked for is still
+returned by `analyze()` as a lower-ranked candidate, as the attached one was
+in 0.5.0.
+
+**A stem ending in a separated vowel gives up its connector when attaching.**
+ах is `aq-a`; ахтай is `aqatai`. 0.5.0 built that reading as `aq-atai`, an MVS
+stranded mid-word, which is the shape gege-linter reports as `unknown-suffix`
+and half the reason the attached spelling could not be the default before.
+
+**Only the join in front of the ending moves.** ахтайгаа is `aqatai-ban`
+attached and `aq-a-tai-ban` joined; the reflexive keeps its connector either
+way. The converter has no fused `taiγan`/`teigen` row and this does not add
+one.
+
+**After a connector-joined suffix the ending stays joined, under both
+values.** аавуудтай is `abu-nuγud-tai`. There is no word to attach to there,
+only another suffix: `nuγudtai` is not a suffix the linter knows, and none of
+the 55 plural + -тай³ rows in the gold attach.
+
+**Ordinals are restyled, not derived.** There are still no suffix rows for
+-дугаар² and -дахь²: the join is set on the resolved stem's Classical form when
+the host is a numeral (`src/ordinal.ts`). So the default output for ordinals is
+unchanged — гуравдугаар was already `γurbaduγar` — and `'joined'` gives
+`γurba-duγar`. Gated to numerals because -дэх is also a verb ending (нэгдэх)
+and the tail of a locative + `ki` (дэргэдэх). **An ordinal after a digit is
+untouched**: `3-дугаар` and `5-дахь` convert exactly as in 0.5.0 under both
+values.
+
+### Changed — same-script readings collapse after scoring
+
+`buildCandidates` used to drop the weaker of two candidates with one script by
+comparing `prior`; `rankCandidates` now does it by score. The two disagree — an
+unsegmented guess carries a larger prior than a harvested stem under a 0.28
+share and still scores below it — and attaching made the collision common:
+ханатай is `qanatai` both as хана + тай and as a letter-by-letter guess, so the
+guess survived, reported `guess` for a dictionary word, and lost to `qantai`.
+`buildCandidates` can therefore return two candidates with one script now;
+`analyze()` never does. Cost: 2 corpus words (3 tokens) change for this reason
+alone, both ties inside the `toli` tier.
+
+### Not changed, deliberately
+
+The -тай³ weights. Both row sets and their measured shares are as they were;
+`generate.ts` uses the comitative row for the spelling asked for and its twin
+for the other one. Spelling both rows alike was tried and re-ranks 297 corpus
+words that have nothing to do with the join (таатай `taγatai` loses to та +
+тай), so it is not part of this change.
+
 ## 0.5.0 — 2026-08-10
 
 **A fourth stem tier.** 41,640 headwords from a bundled SQLite dictionary,

@@ -1,6 +1,6 @@
 {
   "name": "@gege-mn/gege-converter",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Mongolian Cyrillic → traditional Mongolian script (Mongol bichig) converter. Dictionary-and-rules engine, no third-party runtime dependencies, Unicode-correct output.",
   "type": "module",
   "license": "MIT",

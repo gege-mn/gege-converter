@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { analyze, convert } from '../src/index.js';
 import { toScript } from '../src/romanize.js';
+import type { ConvertOptions } from '../src/types.js';
 
 describe('convert', () => {
   it('converts a known word', () => {
@@ -92,95 +93,86 @@ describe('analyze', () => {
  *
  * Rulebook §2.3.6 makes the adjective-forming дагавар залгаж (хэрэгтэй, ёстой,
  * санаатай) and the case-like comitative дагуулж. Nothing in the surface form
- * tells them apart, so both readings are built and `data/suffixes.ts` carries
- * the measured running-text `share`.
+ * tells them apart, so both rows exist and `data/suffixes.ts` carries the
+ * measured running-text `share`.
  *
- * ⚠ **The rulebook does not settle which one we emit.** Reader, 2026-08-10
- * (T1/T2): *"both correct, and it's simply a choice. we chose to detach."* So
- * §2.3.6 describes two well-formed spellings rather than selecting one, and
- * the running-text 72/28 split is house style. The ordering is a documented
- * project convention — `OFF_CONVENTION` in `generate.ts` — not a share.
+ * ⚠ **The rulebook does not settle which spelling we emit.** Reader,
+ * 2026-08-10 (T1/T2): *"both correct, and it's simply a choice."* Reader,
+ * 2026-10-11: still a choice, but legal and formal documents must attach — so
+ * attached is the default and `stylisticSuffixes: 'joined'` is the other one.
+ * The option's own tests are in `stylistic-suffixes.test.ts`.
  *
- * These tests exist to stop the obvious wrong fix. Deleting the comitative row
- * would score 234 gold forms and read every хүнтэй in the language as an
- * adjective; that is the mistake `verb-suffixes.ts` records for `-лаа`, where a
- * lemma dictionary's headwords were mistaken for running-text frequency. **Both
- * readings must exist**, whichever one is currently winning.
+ * These tests exist to stop the obvious wrong fix. Deleting either row set, or
+ * either spelling, would be the mistake `verb-suffixes.ts` records for `-лаа`,
+ * where a lemma dictionary's headwords were mistaken for running-text
+ * frequency. **Both spellings must exist**, whichever one is currently winning.
  */
 describe('-тай³ has two readings and keeps both', () => {
-  const readings = (word: string) =>
-    (analyze(word)[0]?.candidates ?? []).filter((c) => c.segmentation.suffixes.length > 0);
+  const readings = (word: string, options: ConvertOptions = {}) =>
+    (analyze(word, options)[0]?.candidates ?? []).filter((c) => c.segmentation.suffixes.length > 0);
 
   /**
    * Is the word's final ТА + vowel + И written **after a connector**?
    *
    * Asked about the letter immediately before those three, not about the whole
-   * word, because a **chachlag** stem legitimately carries an MVS of its own
-   * mid-word: санаа is `sanaγ-a`, so its залгаж reading is `sanaγ-atai` and
-   * contains an MVS that has nothing to do with the suffix. A plain
-   * `includes(MVS)` would call that detached and be wrong.
+   * word, because a **chachlag** stem legitimately carries an MVS of its own:
+   * санаа is `sanaγ-a`, so its joined spelling `sanaγ-a-tai` holds two. A plain
+   * `includes(MVS)` could not tell which join it was looking at.
    */
   const detachedSuffix = (script: string | undefined): boolean =>
     script !== undefined && /[\u180E\u202F ]...$/.test(script);
 
-  it('offers the залгаж and the дагуулж reading of the same word', () => {
+  it('offers the залгаж and the дагуулж spelling of the same word', () => {
     const joins = new Set(readings('хүчтэй').map((c) => detachedSuffix(c.script)));
     expect(joins).toEqual(new Set([true, false]));
   });
 
   /**
-   * ⚠ Reader ruling, 2026-08-10 (T1/T2). This test asserted the opposite for
-   * a few hours: that the залгаж reading **wins** on the rulebook's own three
-   * examples, because running text writes them attached 118 times to 0 and
-   * §2.3.6 calls the adjectival -тай³ a дагавар.
-   *
-   * Asked directly, the reader declined to make it a rule: *"both correct, and
-   * it's simply a choice. we chose to detach, but we can also attach. when
-   * attaching, гэдэс жийрэглэх rule apply btw"*. So the 72/28 split is house
-   * style, not correctness, and the standing choice here is дагуулж. The
-   * залгаж reading must still be **offered** — the test above this one asserts
-   * that, and the reader confirms it is correct Mongolian — it simply must not
-   * be the answer while `гэдэс жийрэглэх` is unimplemented and our attached
-   * output on a chachlag stem is malformed.
+   * ⚠ This assertion has now pointed both ways, each time on a reader's word.
+   * 2026-08-10: дагуулж wins, because the house had chosen to detach and the
+   * attached output on a chachlag stem was malformed. 2026-10-11: залгаж wins,
+   * because formal documents must attach — and the chachlag is now fused.
    */
-  it('prefers the дагуулж reading, per the reader, while still offering both', () => {
+  it('prefers the залгаж spelling by default, per the reader', () => {
     // The rulebook's own three examples for the adjectival reading.
     for (const word of ['хэрэгтэй', 'ёстой', 'санаатай']) {
-      const best = readings(word)[0];
+      expect(detachedSuffix(readings(word)[0]?.script), word).toBe(false);
+    }
+  });
+
+  it('prefers the дагуулж spelling when asked to join', () => {
+    for (const word of ['хэрэгтэй', 'ёстой', 'санаатай']) {
+      const best = readings(word, { stylisticSuffixes: 'joined' })[0];
       expect(detachedSuffix(best?.script), word).toBe(true);
     }
   });
 
   /**
-   * The залгаж reading survives as a candidate — asserted over **all**
-   * candidates and by **script**, not by walking `segmentation`.
+   * Both spellings survive as candidates under either style — asserted over
+   * **all** candidates and by **script**, not by walking `segmentation`.
    *
-   * ⚠ That distinction is the whole test and it is CLAUDE.md's first footgun
-   * wearing a different hat. хэрэгтэй's залгаж reading assembles as `qereγtei`
-   * and its rule-based guess as `keregtei`; q/k and γ/g are harmony-selected
-   * allographs of one letter, so those two romanizations are **byte-identical
-   * code points** and the candidate list holds one entry, not two. Filtering
-   * for `suffixes.length > 0` therefore loses the reading for хэрэгтэй while
-   * finding it for ёстой — the reading is there either way, and only the
-   * romanization differs. Compare what is emitted.
+   * ⚠ That distinction is CLAUDE.md's first footgun wearing a different hat.
+   * хэрэгтэй's залгаж spelling assembles as `qereγtei` and its rule-based guess
+   * as `keregtei`; q/k and γ/g are harmony-selected allographs of one letter,
+   * so those two romanizations are **byte-identical code points** and the
+   * candidate list holds one entry, not two. Compare what is emitted.
    */
-  it('still builds the залгаж reading, even where it dedupes with a guess', () => {
-    for (const word of ['хэрэгтэй', 'ёстой', 'санаатай', 'хүчтэй']) {
-      const scripts = (analyze(word)[0]?.candidates ?? []).map((c) => c.script);
-      expect(
-        scripts.some((s) => !detachedSuffix(s)),
-        word,
-      ).toBe(true);
-    }
-  });
-
-  it('still offers the comitative reading, connector and all', () => {
-    for (const word of ['хүнтэй', 'хаантай', 'морьтой']) {
-      const comitative = readings(word).find((c) =>
-        c.segmentation.suffixes.some((s) => s.category === 'comitative'),
-      );
-      expect(comitative, word).toBeDefined();
-      expect(detachedSuffix(comitative?.script), word).toBe(true);
+  it('still builds both spellings, whichever style is asked for', () => {
+    for (const stylisticSuffixes of ['attached', 'joined'] as const) {
+      for (const word of ['хэрэгтэй', 'ёстой', 'санаатай', 'хүчтэй', 'хүнтэй', 'морьтой']) {
+        const scripts = (analyze(word, { stylisticSuffixes })[0]?.candidates ?? []).map(
+          (c) => c.script,
+        );
+        const label = `${word} (${stylisticSuffixes})`;
+        expect(
+          scripts.some((s) => !detachedSuffix(s)),
+          label,
+        ).toBe(true);
+        expect(
+          scripts.some((s) => detachedSuffix(s)),
+          label,
+        ).toBe(true);
+      }
     }
   });
 
@@ -193,8 +185,11 @@ describe('-тай³ has two readings and keeps both', () => {
     expect(chains.some((c) => c.includes('plural') && c.includes('derivational'))).toBe(false);
   });
 
-  it('never emits NNBSP for either reading', () => {
+  it('never emits NNBSP for either spelling', () => {
     for (const c of readings('хүчтэй')) expect(c.script).not.toContain('\u202F');
+    for (const c of readings('хүчтэй', { stylisticSuffixes: 'joined' })) {
+      expect(c.script).not.toContain('\u202F');
+    }
   });
 });
 
