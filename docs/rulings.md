@@ -1850,3 +1850,30 @@ all 19 `unknown-suffix` warnings from `pnpm lint:output` are that shape. The
 same one-line fusion would clear them, and the roadmap has said since
 2026-08-10 that this is one rule gating both — but the ruling named six
 endings, and `-лиг` is not one.
+
+## ъ, ь and и before я/а/е are i + y — ruled 2026-11-03
+
+Сумъяа is `sumiy-a`, Азия `aǰiy-a`, Дарьяа `dariy-a`: i, y, then the vowel
+after the suffix connector at the end of a word, and joined when more follows
+(Сумъяабазар `sumiyabaǰar`). **Never `ii-a`.** It draws the same in most
+fonts, but the core specification (§13.5) encodes letters by sound, UTN #57
+writes daliy·a, and its shaping suites have only i, y, MVS, a/e. The harvest
+already spelled its own words this way (яриа `yariy-a`, жишээ `ǰišiy-e`); only
+the guesser did not. `readGlide` in `src/stem.ts`.
+
+Decided with the ruling, from our own data rather than asked:
+
+- **The vowel is the Cyrillic letter's, not harmony's.** биндэрьяа is
+  `bindüriy-a` in both bulk tiers; a feminine word keeps я's a.
+- **-ье / -ъе / -ие give `iy-e`.** One native noun to go on, сүрьеэ
+  `süriy-e`, plus the medial карьер `qariyer`. бие is `bey-e`, which the rule
+  cannot reach — its first vowel is lexical, and it is a harvested row.
+- **-иа after a consonant is the same rule.** 72 of 76 word-final -иа rows
+  across the tiers end `iy-a` (уриа, мушгиа); the other 4 are a loanword and
+  three `iγ-a` stems (гавиа), which are rows, not a rule.
+- **After a vowel, nothing.** хаяъя stays `qayaya`.
+
+Still wrong, and not this rule's to fix: the voluntative (дуулъя, хэлье —
+stem vowel + `y-a`/`y-e`, not `i`), and an и-final stem whose suffix Cyrillic
+merges into иа (тамхиа, салхиар), which the segmenter misses. Numbers in the
+0.7.0 CHANGELOG entry.

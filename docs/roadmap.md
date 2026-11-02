@@ -5,6 +5,18 @@
 Read this when choosing what to work on. Ordered by measured value, not by
 appeal.
 
+## Left by the 0.7.0 glide rule (2026-11-03)
+
+Two groups the glide rule now spells `…iy-a`/`…iy-e` that were wrong before
+and are wrong now, differently (CHANGELOG 0.7.0):
+
+- [ ] **The voluntative** (дуулъя, хэлье, үнсье; 278 types, 1,111 tokens):
+      a verb plus -я/-е, not a glide. Needs a voluntative row in the verb
+      suffix table so the stem keeps its own vowel (хэлье `keley-e`).
+- [ ] **An и-final stem with a vowel-initial suffix** (тамхиа, салхиар,
+      сургуулиа; 110 types, 285 tokens): the segmenter misses тамхи + the
+      reflexive, so the guesser writes `tamqiy-a` for `tamaki-ban`.
+
 ## ⭐ Where the remaining loss actually is — measured 2026-08-10
 
 **This section supersedes the "morphophonology, not a wordlist" thesis below.**

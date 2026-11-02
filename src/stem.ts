@@ -134,6 +134,46 @@ const LETTER_MAP: ReadonlyMap<string, string> = new Map([
 
 const VOWELS = 'аоуэөүиеёюя';
 
+/** The vowel each Cyrillic letter puts after the glide, and the length mark it absorbs. */
+const GLIDE_VOWELS: ReadonlyMap<string, { vowel: 'a' | 'e'; length: string }> = new Map([
+  ['я', { vowel: 'a', length: 'а' }],
+  ['а', { vowel: 'a', length: 'а' }],
+  ['е', { vowel: 'e', length: 'э' }],
+]);
+
+/**
+ * ъ, ь or и after a consonant, before я or е (и also before а), is written
+ * **i + y + vowel**: Сумъяабазар `sumiyabaǰar`, алиал `aliyal`, карьер `qariyer`. At the
+ * end of the word the vowel is detached — Сумъяа `sumiy-a`, Азия `aǰiy-a`,
+ * уриа `uriy-a`, сүрьеэ `süriy-e` — and never `ii-a`, which draws the same but
+ * is not the spelling (ruled 2026-11-03). The data spells it so (яриа `yariy-a`,
+ * захиа, уриа, жишээ `ǰišiy-e`), as do UTN #57's daliy·a and the shaping
+ * suites, which only ever write i, y, MVS, a/e.
+ *
+ * The vowel is the Cyrillic letter's, not the word's harmony: биндэрьяа is
+ * `bindüriy-a` in both bulk tiers, a feminine word that keeps я's a.
+ *
+ * Only after a consonant. After a vowel there is no i to write — хаяъя is
+ * `qayaya`.
+ */
+function readGlide(
+  chars: readonly string[],
+  i: number,
+): { classical: string; end: number } | undefined {
+  const ch = chars[i];
+  const prev = chars[i - 1];
+  if (prev === undefined || VOWELS.includes(prev) || 'ыйъь'.includes(prev)) return undefined;
+  if (ch !== 'ъ' && ch !== 'ь' && ch !== 'и') return undefined;
+  const next = chars[i + 1] as string;
+  const glide = GLIDE_VOWELS.get(next);
+  // ъ/ь never stand before а — Cyrillic writes я there — so а only follows и.
+  if (glide === undefined || (next === 'а' && ch !== 'и')) return undefined;
+  let end = i + 2;
+  if (chars[end] === glide.length) end += 1;
+  const final = end === chars.length;
+  return { classical: `iy${final ? '-' : ''}${glide.vowel}`, end };
+}
+
 /**
  * Rule-based fallback for stems the lexicon doesn't have.
  *
@@ -157,9 +197,16 @@ export function guessStem(cyrillic: string): string {
     // Collapse a doubled vowel: Cyrillic long vowels correspond to a single
     // Classical vowel plus a lost consonant we don't try to recover.
     if (VOWELS.includes(ch) && chars[i + 1] === ch) continue;
+    const glide = readGlide(chars, i);
+    if (glide !== undefined) {
+      out += glide.classical;
+      seenVowel = true;
+      i = glide.end - 1;
+      continue;
+    }
     // An iotated vowel already carries its vowel, so a following plain copy is
-    // the same length mark and is absorbed: аюул is `ayul`, авъяас is `abiyas`
-    // — never ayuul or abiyaas. Measured over the harvest: юу 4/4 and яа 32/37
+    // the same length mark and is absorbed: аюул is `ayul`, аяар is `ayar`
+    // — never ayuul or ayaar. Measured over the harvest: юу 4/4 and яа 32/37
     // render single, and NEITHER ever renders doubled, so emitting the doubled
     // form (which is what this did before) was wrong every time. ё is left
     // alone: ёо is genuinely mixed (ёотон is `yootang`).

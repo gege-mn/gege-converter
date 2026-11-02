@@ -7015,7 +7015,7 @@ export const harvestedLexicon: readonly LexiconEntry[] = [
   { cyrillic: 'харьцуулал', classical: 'qaričaγulul', freq: 0.5 },
   { cyrillic: 'харьцуулалт', classical: 'qaričaγululta', freq: 0.5 },
   { cyrillic: 'харьцуулах', classical: 'qaričaγulqu', freq: 0.5 },
-  { cyrillic: 'харьяа', classical: 'qarii-a', freq: 0.5 },
+  { cyrillic: 'харьяа', classical: 'qariy-a', freq: 0.5 },
   { cyrillic: 'харьяалал', classical: 'qariyalal', freq: 0.5 },
   { cyrillic: 'харьяалах', classical: 'qariyalaqu', freq: 0.5 },
   { cyrillic: 'харьяат', classical: 'qariyatu', freq: 0.5 },

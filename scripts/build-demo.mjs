@@ -285,11 +285,11 @@ const traceHtml = [
      </table></div>
      <p class="note">${
        traceStems.filter((s) => s.matches.some((m) => m.provenance === 'lexicon')).length
-} of these ${traceStems.length} stems ${
+     } of these ${traceStems.length} stems ${
        traceStems.filter((s) => s.matches.some((m) => m.provenance === 'lexicon')).length === 1
          ? 'is'
          : 'are'
-} in the lexicon; the rest fall through to the guesser and are marked as such. The pipeline never pretends a guess is a dictionary entry.</p>`,
+     } in the lexicon; the rest fall through to the guesser and are marked as such. The pipeline never pretends a guess is a dictionary entry.</p>`,
   ),
   stageBox(
     '5–6',

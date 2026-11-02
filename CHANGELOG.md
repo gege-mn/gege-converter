@@ -1,6 +1,97 @@
 # Changelog
 
-## 0.6.0 — unreleased
+## 0.7.0 — 2026-11-03
+
+**ъ, ь and и before я/а/е are written i + y on a word the data does not
+have.** Сумъяа is `sumiy-a`, Азия `aǰiy-a`, Дарьяа `dariy-a`; when more
+follows, the vowel stays joined: Сумъяабазар is `sumiyabaǰar`. 0.6.0 wrote ъ
+as nothing and и/ь as a bare i, so the guesser gave `sumya`, `mariya` with
+the a attached, and `uria`. Ruled 2026-11-03. Minor rather than patch because
+default output changes for every unknown word of this shape.
+
+| | 0.6.0 | this build |
+|---|---|---|
+| Сумъяа | `sumya` | `sumiy-a` |
+| Адъяа | `adya` | `adiy-a` |
+| Сүндэръяа | `sünderya` | `sünderiy-a` |
+| Дарьяа | `dariya` | `dariy-a` |
+| Азия | `aǰiya` | `aǰiy-a` |
+| Мария | `mariya` | `mariy-a` |
+| Сумъяабазар | `sumyabaǰar` | `sumiyabaǰar` |
+| Адъяасүрэн | `adyasüren` | `adiyasüren` |
+| Мариягаа | `mariya-ban` | `mariy-a-ban` |
+
+**Why i + y + MVS + a, and never ii.** The Unicode core specification (§13.5)
+encodes Mongolian letters by sound, not by shape, so `ii-a` is a different
+string from `iy-a` even where a font draws them the same. UTN #57's own example
+is daliy·a, its shaping suites write this ending only as i, y, MVS, a/e, Kimo
+writes iy-a for every one of these words, and this converter's data already
+did: яриа `yariy-a`, захиа `ǰaqiy-a`, уриа `uriy-a`, жишээ `ǰišiy-e`. The one
+row that did not, harvested харьяа `qarii-a`, is now `qariy-a` (and харьяаны
+`qariyan-u` with it), and a test keeps every tier free of ii before a detached
+a/e.
+
+**Which letters.** ъ, ь or и after a consonant, followed by я or е; и also
+followed by а. A following length mark is absorbed (Сумъяа, Мариаа). After a
+vowel nothing changes: хаяъя stays `qayaya`. Inside a guessed word и + е is
+covered too, so loanwords such as пиеса now read `piyesa`.
+
+**The vowel comes from the Cyrillic letter, not from harmony.** я and а give
+a, е gives e. A feminine word keeps я's a: биндэрьяа is `bindüriy-a` in both
+bulk tiers, and Сүндэръяа is now `sünderiy-a`. -ье/-ъе/-ие give e: сүрьеэ is
+`süriy-e`, as the harvest has it.
+
+**-иа after a consonant is the same rule.** уриа and мушгиа are attested
+`uriy-a` and `musqiy-a`, and over the three data tiers 72 of 76 word-final
+-иа rows end `iy-a`; inside a word алиал is `aliyal`.
+
+Measured on the data rows of these shapes, guessed as if unknown
+(lexicon, harvested and toli together):
+
+| | rows | 0.6.0 | this build |
+|---|---|---|---|
+| word-final, last four letters right | 100 | 0 | **84** |
+| word-final, whole word right | 100 | 0 | **71** |
+| medial и + а, whole word right | 324 | 1 | **153** |
+| medial ъя/ья, whole word right | 46 | 18 | **21** |
+
+Same scripts, same fixtures, only `src/` differing:
+
+| | 0.6.0 | this build | command |
+|---|---|---|---|
+| reader rulings | 160/160 | 160/160 | `node scripts/eval-rulings.mjs` |
+| corpus, token-weighted | 69.3% | 69.3% | `node scripts/eval-corpus.mjs` |
+| corpus, by type | 39.3% | **39.5%** | same |
+| corpus, guess tier, by token | 14.7% | **14.9%** | same |
+| gold — detached (1,611), emitted | 1,140 | **1,141** | `node scripts/eval.mjs` |
+| gold — whole fixture (1,884), emitted | 71.7% | **71.8%** | same |
+| gold — verbs (197) | 50.8% | 50.8% | `node scripts/status.mjs` |
+| benchmark, consensus set WER | 13.08% | 13.08% | `node scripts/benchmark.mjs` |
+| orphaned running text | 1.30% | 1.30% | `node scripts/check-orphans.mjs` |
+| `lint:output` | 19 `unknown-suffix` | 19 `unknown-suffix` | `node scripts/lint-output.mjs` |
+
+Over the 49,452 corpus word types, 563 change their top reading (1,829
+tokens). Against the reference with connectors folded away, 63 types get
+better (131 tokens) and **none get worse**. With the connector kept, 99 get
+better and 2 get worse — авьяа and аргадья, 3 tokens, where that reference
+attaches the a and the ruling detaches it.
+
+⚠ **Most changed words are still wrong, differently.** 449 of the 563 were
+wrong before and are wrong now:
+
+- **The voluntative, 278 types / 1,111 tokens.** дуулъя, хэлье, үнсье are a
+  verb plus -я/-е, not a glide, and the reference writes the stem's own
+  vowel: хэлье `keley-e`. They now end `iy-e` (`keliy-e`) where they ended
+  `ie`, so the connector and y are right and the vowel before them is not.
+  There is no voluntative row in the verb suffix table yet.
+- **An и-final stem with a vowel-initial suffix, 110 types / 285 tokens.**
+  тамхиа, салхиар, сургуулиа are тамхи/салхи/сургууль plus the reflexive or
+  the instrumental, which Cyrillic merges into иа. The segmenter does not
+  find the stem, the whole word falls to the guesser, and it now writes
+  `tamqiy-a` where the reference writes `tamaki-ban`. That was wrong before
+  as `tamqia`; it is a segmentation gap, not this rule's.
+
+## 0.6.0 — 2026-10-11
 
 - **Plural after a stem in н** is `nuγud`/`nügüd`, not the bare `ud`/`üd`:
   мэргэжилтнүүд is `merγeǰilten-nügüd`, настангууд `nasutan-nuγud`. A reader

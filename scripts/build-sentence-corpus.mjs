@@ -31,10 +31,13 @@ for (const line of gunzipSync(readFileSync(SRC)).toString('utf8').split('\n')) {
   const bar = line.indexOf('|');
   if (bar < 0) continue;
   const cy = line.slice(0, bar).split(' ').filter(Boolean);
-  const bi = line.slice(bar + 1).split(' ').filter(Boolean);
+  const bi = line
+    .slice(bar + 1)
+    .split(' ')
+    .filter(Boolean);
   if (cy.length === 0 || cy.length !== bi.length) continue;
   rows.push({ cyrillic: cy.join(' '), script: bi.join(' ') });
 }
 
-writeFileSync(OUT, rows.map((r) => JSON.stringify(r)).join('\n') + '\n');
+writeFileSync(OUT, `${rows.map((r) => JSON.stringify(r)).join('\n')}\n`);
 console.log(`${rows.length} line pairs -> ${OUT}`);
