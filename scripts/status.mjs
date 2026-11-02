@@ -118,7 +118,7 @@ function score(entries) {
  * Every `Provenance` value plus `none`, in tier order.
  *
  * ⚠ `toli` was missing here from the day that tier landed until 2026-08-10,
- * and unlike `eval-model.mjs` — where the same omission threw — this script
+ * and unlike gege-prism's `eval-model.mjs` — where the same omission threw — this script
  * fails **silently** in two different ways. The gold table simply skips the
  * tier, so its rows summed to 1,839 of 1,884; and `--coverage` dropped 1,186
  * of 28,982 tokens on the floor, printing `REAL DATA 87.3%` where the true

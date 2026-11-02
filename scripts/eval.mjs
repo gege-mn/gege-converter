@@ -17,7 +17,7 @@
  * `best segmented` skips a whole-word memorised reading to ask whether the
  * segmenter and the suffix chain did their job; `EMITTED` is what a user gets.
  * They differ by 34 forms on the detached set (75.9% vs 73.7% on 2026-08-10),
- * and `eval-model.mjs` and `status.mjs` report the *emitted* one under the same
+ * and gege-prism's `eval-model.mjs` and `status.mjs` report the *emitted* one under the same
  * old name. Quote a number together with the script that produced it, or say
  * which of these two it is — on 2026-08-10 the two were briefly equal at 73.7%
  * for unrelated reasons and an hour went into attributing a regression to the
@@ -105,7 +105,7 @@ function evaluate(gold, { collectMisses = false } = {}) {
     // forms on the detached set today (75.9% here against 73.7% emitted).
     //
     // Both numbers were called "top-1" until 2026-08-10, in this script and in
-    // `eval-model.mjs`/`status.mjs` respectively, and on that day they were
+    // gege-prism's `eval-model.mjs`/`status.mjs` respectively, and on that day they were
     // briefly the *same* number (73.7%) for different reasons — which is how a
     // session spent an hour attributing a regression to the wrong change.
     // `emitted` below is now reported beside it so neither can be quoted alone.

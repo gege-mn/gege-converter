@@ -3,7 +3,6 @@
  * Benchmark against a two-reference consensus set, with WER and CER.
  *
  *   node scripts/benchmark.mjs [--html out.html] [--misses N]
- *                             [--dump-words f.txt] [--model preds.tsv]
  *
  * ## The problem this solves
  *
@@ -43,24 +42,6 @@
  * Two of our differences are deliberate and are folded away before scoring or
  * they dominate everything: the NNBSP/MVS connector, and the V+y+i diphthong
  * rejected per UTN #57. FVS is folded too.
- *
- * ## Scoring the neural model on this same set
- *
- * `--dump-words` writes the consensus types for `training/convert.py`, and
- * `--model` reads the resulting TSV back and adds model and hybrid rows.
- *
- * This is a fair test **and the reason is worth stating**: the benchmark set is
- * drawn from `harvested-inflected.json`, and `export-training-data.mjs` removes
- * every one of those 1,768 keys from train and val *by Cyrillic surface form*,
- * asserting no leak before it writes. So the model has never seen these words.
- * Their stems it has seen, in other inflected forms — which is exactly the
- * pipeline's position too, so the comparison is like for like.
- *
- * ⚠ What it does **not** control for: the model's training targets are the
- * harvest, which is Tungaamal's output, and half of this reference is Tungaamal.
- * The model is being scored against a convention it was trained to imitate. The
- * pipeline's harvested tier has the identical advantage, so the two are
- * comparable to each other — but neither number transfers to a reader-gold set.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -81,8 +62,6 @@ const flag = (name, fallback) => {
 };
 const HTML = flag('--html', null);
 const SHOW = Number(flag('--misses', 0));
-const DUMP = flag('--dump-words', null);
-const MODEL = flag('--model', null);
 
 const CORPUS = '.tmp/parallel-lyrics.txt.gz';
 const GOLD = 'test/fixtures/harvested-inflected.json';
@@ -174,11 +153,6 @@ for (const w of both) {
   });
 }
 
-if (DUMP) {
-  writeFileSync(DUMP, `${consensus.map((c) => c.w).join('\n')}\n`);
-  console.log(`wrote ${consensus.length} consensus types to ${DUMP}\n`);
-}
-
 // ------------------------------------------------------------- the predictors
 // `analyze` is called once per type and memoised: the tier slices below would
 // otherwise re-run the whole pipeline three times over the same 604 words.
@@ -191,32 +165,6 @@ const pipeline = (w) => {
     pipelineCache.set(w, p);
   }
   return p;
-};
-
-const modelPreds = new Map();
-if (MODEL) {
-  for (const line of readFileSync(resolve(ROOT, MODEL), 'utf8').split('\n')) {
-    const tab = line.indexOf('\t');
-    if (tab > 0) modelPreds.set(line.slice(0, tab).trim(), line.slice(tab + 1).trim());
-  }
-  const missing = consensus.filter((c) => !modelPreds.has(c.w));
-  if (missing.length) {
-    // A silently absent prediction scores as an empty string, which reads as a
-    // model error rather than as a missing file. Fail instead of under-reporting.
-    console.error(
-      `${MODEL} is missing ${missing.length} of ${consensus.length} consensus types, e.g. ${missing[0].w}`,
-    );
-    process.exit(1);
-  }
-}
-
-// The hybrid is the arrangement `neural-model.md` specifies: dictionaries keep
-// every type they can answer from real data, and the model is only allowed the
-// slice where the pipeline would otherwise fall back to `guessStem`.
-const model = (w) => ({ script: modelPreds.get(w) ?? '', tier: 'model' });
-const hybrid = (w) => {
-  const p = pipeline(w);
-  return p.tier === 'guess' ? model(w) : p;
 };
 
 // -------------------------------------------------------------------- scoring
@@ -251,9 +199,6 @@ const score = (items, predict = pipeline) => {
   };
 };
 
-// Both slices are defined by which tier the *pipeline* reaches for, so that the
-// model and hybrid rows are scored on exactly the same types as the rows they
-// are meant to be read against.
 const guessed = consensus.filter((it) => pipeline(it.w).tier === 'guess');
 const backed = consensus.filter((it) => pipeline(it.w).tier !== 'guess');
 
@@ -267,20 +212,6 @@ const rows = [
   ['ours — where a lexicon tier fired', dataBacked],
   ['ours — where the guesser fired', guessOnly],
 ];
-if (MODEL) {
-  rows.push(
-    ['model alone — all', score(consensus, model)],
-    // The data-backed row is here to answer a question the gold set answers the
-    // other way round. On gold the model beats the pipeline on the `harvested`
-    // tier, which reads as an argument for promoting it above the dictionaries.
-    // On this set it does not. Print both so the disagreement is visible instead
-    // of whichever one was looked at first.
-    ['model alone — where a lexicon tier fired', score(backed, model)],
-    ['model alone — where the guesser fired', score(guessed, model)],
-    ['hybrid — model only on the guessed slice', score(consensus, hybrid)],
-  );
-}
-
 console.log(`two-reference intersection: ${both.length} types`);
 console.log(
   `  the two references AGREE on   ${consensus.length}  (${pc(consensus.length / both.length)}) — the benchmark set, ${overall.tokens} corpus tokens`,
@@ -318,9 +249,7 @@ if (HTML) {
     .slice(0, 40)
     .map(
       (m) =>
-        `<tr><td class="cyr">${m.w}</td><td class="num">${m.n}</td><td class="tier">${m.tier}</td><td class="bi">${m.ours}</td>${
-          MODEL ? `<td class="bi">${modelPreds.get(m.w) ?? ''}</td>` : ''
-        }<td class="bi">${m.tungaamal}</td></tr>`,
+        `<tr><td class="cyr">${m.w}</td><td class="num">${m.n}</td><td class="tier">${m.tier}</td><td class="bi">${m.ours}</td><td class="bi">${m.tungaamal}</td></tr>`,
     )
     .join('\n');
   const html = `<meta charset="utf-8">
@@ -358,13 +287,6 @@ upper bound on divergence, not a certificate.</div>
 ${tr('ours — consensus set, all', overall)}
 ${tr('ours — where a lexicon tier fired', dataBacked)}
 ${tr('ours — where the guesser fired', guessOnly)}
-${
-  MODEL
-    ? `${tr('model alone — all', score(consensus, model), 'the 7.4M character transformer, never trained on these types')}
-${tr('model alone — where the guesser fired', score(guessed, model), 'the same 68 types the guesser gets 88.24% wrong')}
-${tr('hybrid — model only on the guessed slice', score(consensus, hybrid), 'dictionaries keep every type they can answer from real data')}`
-    : ''
-}
 <tr class="ref"><td>Transformer, Na et al. 2022<span class="note">different data: 58k dictionary headwords, random split</span></td><td class="num">5232</td><td class="num">16.92%</td><td class="num">3.15%</td><td class="num">—</td></tr>
 <tr class="ref"><td>joint-sequence n-gram, same paper<span class="note">the pre-neural baseline</span></td><td class="num">5232</td><td class="num">22.63%</td><td class="num">4.20%</td><td class="num">—</td></tr>
 </tbody></table>
@@ -372,9 +294,7 @@ ${tr('hybrid — model only on the guessed slice', score(consensus, hybrid), 'di
 <p class="lede">Ranked by corpus frequency. These are the items where two independent systems
 agree and we do not — the highest-value questions available without a reader ruling on
 something contested.</p>
-<table><thead><tr><th>Cyrillic</th><th>corpus</th><th>tier</th><th>ours</th>${
-    MODEL ? '<th>model</th>' : ''
-  }<th>both references</th></tr></thead>
+<table><thead><tr><th>Cyrillic</th><th>corpus</th><th>tier</th><th>ours</th><th>both references</th></tr></thead>
 <tbody>${missRows}</tbody></table>
 </main>
 ${footer()}`;

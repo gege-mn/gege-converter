@@ -118,7 +118,7 @@ isn't necessary"*.
   булан's Classical genuinely ends in NG (`bulung`) while нян's does not
   (`niyan`), and nothing has to decide which.
 - **The `toli` holdout leak**, in `docs/data-and-accuracy.md`.
-- **The sentence aligner rewrite**, in `docs/neural-model.md` — 2,037 → 6,217
+- **The sentence aligner rewrite**, in gege-prism's `docs/neural-model.md` — 2,037 → 6,217
   word pairs at unchanged precision.
 - **Seven reader answers**, in `docs/rulings.md`. `node scripts/eval-rulings.mjs`
   reads **160/160** confirmed; `rulings.test.ts` grew 153 → 174 `same()` rows.

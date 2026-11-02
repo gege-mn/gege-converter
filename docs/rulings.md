@@ -63,7 +63,7 @@ FVS1–FVS4. `toScript('1234')` therefore returns four variation selectors with
 no error at all. Digits and punctuation are handled in `punctuation.ts`, off
 the token kinds `tokenize` already produces, and never reach the alphabet.
 Full rationale in that module's header; consequences for training data in
-`neural-model.md`.
+gege-prism's `neural-model.md`.
 
 ## Rulings from a bichig reader (do not re-litigate)
 
@@ -556,7 +556,7 @@ own examples:
 So the harvest's ХА was correct, `repairDevoicedGa` inverted a real rule across
 224 rows, and the 2015 Цэвэл's 44 "disagreements" were 44 agreements with the
 law. The call is withdrawn from `import-harvest.mjs` and
-`export-training-data.mjs`; the function and its tests remain, unused, because
+gege-prism's `export-training-data.mjs`; the function and its tests remain, unused, because
 the *inverse* rule is worth enforcing on generated output later.
 
 **Why six reader answers did not outvote it, stated plainly so the pattern is

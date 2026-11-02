@@ -52,7 +52,7 @@ was collected for homograph detection and never mined for word pairs;
 `src/data/verb-suffixes.ts` records one and zero attestations respectively.
 Alignment is anchor-verified at **95.3%** (leave-one-out) and a reader ruled a
 28-form sample 28/28. Method and traps are in that script's header and in
-`neural-model.md`.
+gege-prism's `neural-model.md`.
 
 **Trap 6, and the reason naive alignment fails:** the converter does not
 preserve token count. It merges (миний л → one token) and splits (усны →
@@ -87,7 +87,7 @@ aligner could recover. This source is not exhausted.
 > for equality**, because a merge plus a split in one sentence leaves them
 > equal, so that test was never sound — it only happened to be conservative.
 > Full write-up, including the merge/split cost variant that was measured and
-> rejected, in `docs/neural-model.md`.
+> rejected, in gege-prism's `docs/neural-model.md`.
 >
 > ⚠ One prerequisite is easy to miss and silently halves the anchors:
 > `attachDetachedSuffix` must be applied **across the token boundary** before

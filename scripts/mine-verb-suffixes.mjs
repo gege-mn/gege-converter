@@ -60,7 +60,7 @@ const INCLUDE_HELD_OUT = process.argv.includes('--include-held-out');
  * — all 197 of its forms are still in that file — so pointing `--corpus` at the
  * aligned pool mines the eval set and then the eval set scores the rows. That
  * is not hypothetical: it is how the 2026-07-29 perfective rows were derived,
- * and `scripts/export-training-data.mjs` already holds these same forms out for
+ * and gege-prism's `scripts/export-training-data.mjs` already holds these same forms out for
  * exactly this reason. This is that guard, on the other consumer.
  *
  * `--include-held-out` reproduces the counts mined before this existed. Shares

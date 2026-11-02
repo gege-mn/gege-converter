@@ -209,7 +209,7 @@ writeFileSync(
           '`script` is authoritative and is what grading compares; `classical` is a convenience and',
           'is absent where the form does not round-trip. `ambiguous` marks the -лаа group, where the',
           'verbal and deverbal-noun readings are both valid and indistinguishable from the Cyrillic.',
-          'MUST be held out of training: scripts/export-training-data.mjs removes these keys.',
+          'MUST be held out of training: the gege-prism export-training-data.mjs removes these keys.',
         ].join(' '),
         generatedBy: 'scripts/build-verb-gold.mjs',
         seed: 20260727,

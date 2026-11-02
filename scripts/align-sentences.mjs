@@ -171,7 +171,7 @@ const rows = [...found]
 // -------------------------------------------------------------- leak check
 
 /**
- * The held-out set, built exactly as `scripts/export-training-data.mjs` builds
+ * The held-out set, built exactly as gege-prism's `scripts/export-training-data.mjs` builds
  * it: gold + verb gold + every Cyrillic run of two or more characters anywhere
  * in the rulings file. That last rule is what caught хийж leaking last time.
  *
@@ -277,7 +277,7 @@ console.log(
   `forms read two ways        ${pad(disagreed)}  (majority wins, ${tied} exact ties dropped)`,
 );
 console.log(
-  `held-out forms in output   ${pad(collisions.length)}  (export-training-data.mjs removes them)`,
+  `held-out forms in output   ${pad(collisions.length)}  (gege-prism's export-training-data.mjs removes them)`,
 );
 console.log('leak assertion             PASS');
 

@@ -145,7 +145,7 @@ const curated = new Set(lexicon.map((e) => e.cyrillic));
  * work; this one rejected nothing for the sets it did not read.
  *
  * `rulings.test.ts` is scraped for every Cyrillic run of length ≥2, matching
- * `scripts/export-training-data.mjs`. That over-matches — it picks up suffix
+ * gege-prism's `scripts/export-training-data.mjs`. That over-matches — it picks up suffix
  * fragments like `ийн` and `сэн` out of test prose — and over-matching is the
  * correct direction for a holdout: a few dozen extra headwords withheld costs
  * nothing against a 40k tier, while one leaked ruling silently corrupts the

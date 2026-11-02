@@ -22,115 +22,12 @@
  * source; MVS appears here only as a \uXXXX escape.
  */
 
-import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { resolve } from 'node:path';
-import { createInterface } from 'node:readline';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = Number(process.env.PORT ?? 5173);
-
-/**
- * The trained checkpoints, which are deliberately NOT in the repo — a 30 MB
- * binary does not belong here, and `.tmp/` is gitignored. Missing weights are
- * not an error: the playground works without them and the selector simply
- * reports the model unavailable.
- *
- * v1 is 2026-07-27's first run; v2 is the same architecture, seed and epoch
- * count retrained after sentence alignment added 1,966 word pairs. Held-out
- * verb accuracy 33.5% → 72.1%, noun gold 54.8% → 59.2%.
- */
-const MODELS = {
-  v1: {
-    label: 'v1 — before sentence alignment',
-    checkpoint: resolve(ROOT, '.tmp/bundle/gege-train/model/model.pt'),
-  },
-  v2: {
-    label: 'v2 — after sentence alignment',
-    checkpoint: resolve(ROOT, '.tmp/model-v2.pt'),
-  },
-};
-const PYTHON = resolve(ROOT, '.tmp/bundle/gege-train/.venv/bin/python');
-const TRAINING_DIR = resolve(ROOT, 'training');
-
-/**
- * One long-lived Python process per checkpoint.
- *
- * Loading 30 MB of weights takes seconds, so spawning per request would make
- * the page unusable at typing speed. Workers start on first use and stay up for
- * the life of the server.
- */
-const workers = new Map();
-
-function startWorker(id) {
-  const { checkpoint } = MODELS[id];
-  const child = spawn(PYTHON, ['serve_model.py', '--model', checkpoint], {
-    cwd: TRAINING_DIR,
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
-
-  // Requests are answered strictly in order, so a FIFO of pending resolvers is
-  // enough to pair each reply with its caller — no request ids needed.
-  const pending = [];
-  const lines = createInterface({ input: child.stdout });
-  lines.on('line', (line) => {
-    const resolvePending = pending.shift();
-    if (!resolvePending) return;
-    try {
-      resolvePending(JSON.parse(line));
-    } catch {
-      resolvePending({ error: `unparseable reply: ${line.slice(0, 200)}` });
-    }
-  });
-
-  const worker = { child, pending, ready: false, failed: null, stderr: '' };
-
-  child.stderr.on('data', (chunk) => {
-    const text = String(chunk);
-    if (text.includes('READY')) worker.ready = true;
-    // Keep only the tail: torch prints a UserWarning banner on every start and
-    // the useful part of a real failure is at the end.
-    worker.stderr = `${worker.stderr}${text}`.slice(-4000);
-  });
-
-  const die = (why) => {
-    worker.failed = why;
-    while (pending.length) pending.shift()({ error: why });
-    workers.delete(id);
-  };
-  child.on('error', (err) => die(String(err?.message ?? err)));
-  child.on('exit', (code) => {
-    if (code !== 0) die(`worker exited (${code}): ${worker.stderr.trim().slice(-400)}`);
-  });
-
-  return worker;
-}
-
-async function runModel(id, words) {
-  if (!MODELS[id]) return { error: `unknown model ${id}` };
-  if (!existsSync(MODELS[id].checkpoint)) {
-    return { error: `checkpoint not found: ${MODELS[id].checkpoint}` };
-  }
-  if (!existsSync(PYTHON)) return { error: `python venv not found: ${PYTHON}` };
-  if (words.length === 0) return { scripts: [] };
-
-  let worker = workers.get(id);
-  if (!worker || worker.failed) {
-    worker = startWorker(id);
-    workers.set(id, worker);
-  }
-
-  const reply = await new Promise((resolvePending) => {
-    worker.pending.push(resolvePending);
-    worker.child.stdin.write(`${JSON.stringify(words)}\n`);
-  });
-
-  if (reply?.error) return { error: reply.error };
-  if (!Array.isArray(reply)) return { error: 'malformed reply from worker' };
-  return { scripts: reply };
-}
 
 /** MONGOLIAN VOWEL SEPARATOR — the suffix connector, invisible when rendered. */
 const MVS = '\u180E';
@@ -138,7 +35,7 @@ const MVS = '\u180E';
 const NNBSP = '\u202F';
 
 /**
- * Import the built library fresh, so a `pnpm build` in another terminal is
+ * Import the built library fresh, so a `bun run build` in another terminal is
  * picked up on reload rather than needing a server restart.
  */
 async function loadLibrary() {
@@ -157,34 +54,11 @@ async function analyzeRequest(body) {
     digits = 'ascii',
     punctuation = 'ascii',
     stylisticSuffixes = 'attached',
-    model = 'off',
   } = body;
   const lib = await loadLibrary();
   const options = { digits, punctuation, stylisticSuffixes };
 
   const analyzed = lib.analyze(text, options);
-
-  /**
-   * Ask the model about every word, not only the ones the pipeline would guess.
-   * The hybrid only *uses* its answer on the guess slice — that is the proposed
-   * architecture and what `eval-model.mjs` scores — but seeing what it would
-   * have said elsewhere is the whole point of a comparison page, and it is how
-   * you notice the model quietly beating a dictionary.
-   */
-  let modelScripts = null;
-  let modelError = null;
-  if (model !== 'off') {
-    const words = analyzed.filter((t) => t.token.kind === 'word').map((t) => t.token.text);
-    const result = await runModel(model, words);
-    if (result.error) modelError = result.error;
-    else {
-      modelScripts = new Map();
-      let i = 0;
-      for (const t of analyzed) {
-        if (t.token.kind === 'word') modelScripts.set(t.token.text, result.scripts[i++] ?? '');
-      }
-    }
-  }
 
   const tokens = analyzed.map((t) => ({
     kind: t.token.kind,
@@ -210,33 +84,15 @@ async function analyzeRequest(body) {
   const counts = { lexicon: 0, harvested: 0, guess: 0, none: 0 };
   for (const w of words) counts[w.candidates[0]?.provenance ?? 'none'] += 1;
 
-  // Attach the model's answer, and decide per word whether the hybrid takes it.
-  // Dictionaries win outright; the model is consulted only where the pipeline
-  // would otherwise guess, which is the one place the pipeline scores ~0%.
-  let suppliedByModel = 0;
-  for (const t of tokens) {
-    if (t.kind !== 'word') continue;
-    const fromModel = modelScripts?.get(t.text);
-    const provenance = t.candidates[0]?.provenance ?? 'none';
-    const usesModel = Boolean(fromModel) && (provenance === 'guess' || provenance === 'none');
-    t.model = fromModel ? { script: fromModel, codePoints: codePoints(fromModel) } : null;
-    t.usesModel = usesModel;
-    if (usesModel) {
-      t.rendered = fromModel;
-      suppliedByModel += 1;
-    }
-  }
-
   // Rebuild from the per-token renderings rather than calling `convert()`, so
   // the string on screen is exactly the concatenation of the words shown below
-  // it. Calling convert() would silently ignore the model.
+  // it.
   const output = tokens.map((t) => t.rendered).join('');
 
   return {
     output,
     outputCodePoints: codePoints(output),
     tokens,
-    model: model === 'off' ? null : { id: model, error: modelError, supplied: suppliedByModel },
     stats: {
       words: words.length,
       ...counts,
@@ -257,7 +113,7 @@ const PAGE = `<!doctype html>
 <title>gege-converter playground</title>
 <style>
  :root{--bg:#0f1115;--panel:#161922;--fg:#e6e6e6;--dim:#a3a8b3;--rule:#2a2f3a;
-   --lex:#5bd68a;--harv:#8ab4f8;--guess:#f2b45e;--none:#e46f6f;--verb:#c58af9;--model:#4fd1c5;}
+   --lex:#5bd68a;--harv:#8ab4f8;--guess:#f2b45e;--none:#e46f6f;--verb:#c58af9;}
  *{box-sizing:border-box}
  body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,
    BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -295,9 +151,6 @@ const PAGE = `<!doctype html>
  .tok.lexicon{border-left-color:var(--lex)} .tok.harvested{border-left-color:var(--harv)}
  .tok.guess{border-left-color:var(--guess)} .tok.none{border-left-color:var(--none)}
  .tok.skip{opacity:.4;border-left-color:transparent;cursor:default}
- .tok.model{border-left-color:var(--model);border-left-width:3px}
- .tok .md{color:var(--model);font-size:.7rem;margin-left:5px}
- .model{color:var(--model)}
  select{background:var(--panel);color:var(--fg);border:1px solid var(--rule);
    border-radius:6px;padding:3px 7px;font:inherit;font-size:.85rem}
  .tok .vb{color:var(--verb);font-size:.7rem;margin-left:5px}
@@ -316,17 +169,9 @@ const PAGE = `<!doctype html>
 <header>
   <h1>gege-converter playground</h1>
   <div class="opts">
-    <label>Model
-      <select id="model">
-        <option value="off">off — pipeline only</option>
-        <option value="v1">v1 — before sentence alignment</option>
-        <option value="v2" selected>v2 — after sentence alignment</option>
-      </select>
-    </label>
     <label><input type="checkbox" id="digits"> Mongolian digits</label>
     <label><input type="checkbox" id="punct"> Mongolian punctuation</label>
     <label><input type="checkbox" id="joined"> Connector-join -тай / ordinals</label>
-    <span id="hint"></span>
   </div>
 </header>
 <main>
@@ -359,7 +204,6 @@ const run = async () => {
       digits: $('digits').checked ? 'mongolian' : 'ascii',
       punctuation: $('punct').checked ? 'mongolian' : 'ascii',
       stylisticSuffixes: $('joined').checked ? 'joined' : 'attached',
-      model: $('model').value,
     }),
   });
   data = await res.json();
@@ -387,23 +231,15 @@ function render() {
     pill('no reading', s.none, 'none') +
     pill('verb-shaped', s.verbShaped, 'verb') +
     (s.hasNnbsp ? '<span class="pill none"><b>NNBSP</b> in output!</span>' : '') +
-    (s.clean ? '<span class="pill lexicon">every stem from real data</span>' : '') +
-    (data.model && !data.model.error
-      ? pill('from ' + data.model.id, data.model.supplied, 'model') : '') +
-    (data.model && data.model.error
-      ? '<span class="pill none"><b>' + data.model.id + ' unavailable</b></span>' : '');
-  $('hint').innerHTML = data.model && data.model.error
-    ? '<span class="model">' + esc(data.model.error.slice(0, 160)) + '</span>' : '';
+    (s.clean ? '<span class="pill lexicon">every stem from real data</span>' : '');
 
   $('toks').innerHTML = data.tokens.map((t, i) => {
     if (t.kind !== 'word') {
       return '<span class="tok skip">' + esc(t.text.trim() || '␣') + '</span>';
     }
     const p = t.candidates[0] ? t.candidates[0].provenance : 'none';
-    const cls = t.usesModel ? 'model' : p;
-    return '<span class="tok ' + cls + (i === sel ? ' sel' : '') + '" data-i="' + i + '">' +
-      esc(t.text) + (t.verbForm ? '<span class="vb">' + t.verbForm.kind + '</span>' : '') +
-      (t.usesModel ? '<span class="md">model</span>' : '') + '</span>';
+    return '<span class="tok ' + p + (i === sel ? ' sel' : '') + '" data-i="' + i + '">' +
+      esc(t.text) + (t.verbForm ? '<span class="vb">' + t.verbForm.kind + '</span>' : '') + '</span>';
   }).join('');
 
   for (const el of $('toks').querySelectorAll('.tok[data-i]')) {
@@ -421,16 +257,6 @@ function renderDetail() {
       ', -' + esc(t.verbForm.ending) + '). This package has no verb morphology' +
       (t.candidates[0] && t.candidates[0].provenance === 'guess'
         ? ' — combined with a guessed stem, this is very likely wrong.' : '.') + '</p>';
-  }
-  if (t.model) {
-    html += '<div class="cand"><div class="top"><code>' + esc(t.model.script) + '</code>' +
-      '<span class="meta model">' + data.model.id + (t.usesModel ? ' · USED' : ' · not used') +
-      '</span></div>' +
-      '<div class="meta">' + (t.usesModel
-        ? 'the pipeline would have guessed here, so the hybrid takes this'
-        : 'a dictionary covers this word, so the hybrid keeps the pipeline answer') + '</div>' +
-      '<div class="mn">' + esc(t.model.script) + '</div>' +
-      '<div class="cp">' + t.model.codePoints + '</div></div>';
   }
   if (!t.candidates.length) html += '<p class="empty">No candidates.</p>';
   for (const c of t.candidates) {

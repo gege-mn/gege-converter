@@ -137,8 +137,8 @@ What it cost, measured on the 197-form verb gold set:
 
 Nearly the whole "the `toli` tier scores well on verbs" reading was the fixture
 being read back to itself. Verify the fix by grepping the shipped file for
-those ten words: all ten return zero, and `node scripts/eval-model.mjs --gold
-test/fixtures/verb-gold.json` shows the `toli` row at n=1.
+those ten words: all ten return zero, and gege-prism's `bun run eval:model --gold
+../gege-converter/test/fixtures/verb-gold.json` shows the `toli` row at n=1.
 
 ⚠ Neither 53.3% nor 51.9% is the current verb-gold figure — that pair is the
 *leak measurement*, taken before/after one change with everything else held
@@ -147,7 +147,7 @@ pipeline moved afterwards; the end-of-session reading is **50.8%**. Do not
 carry the 51.9% forward as a current number.
 
 **The lesson is not "check your holdout".** It is sharper than that, and it is
-the second instance of the same sentence in this repo — `docs/neural-model.md`
+the second instance of the same sentence in this repo — gege-prism's `docs/neural-model.md`
 records the first, in the training export, in almost the same words:
 
 > **A holdout filter that has never rejected anything is not known to work.**
@@ -155,7 +155,7 @@ records the first, in the training export, in almost the same words:
 The noun gold set showed **zero** collisions with this source, which is why
 nothing looked wrong. *The one fixture that was checked was the one with
 nothing to find.* The gate now reads all three, scraping `rulings.test.ts` for
-every Cyrillic run of length ≥2 exactly as `export-training-data.mjs` does.
+every Cyrillic run of length ≥2 exactly as gege-prism's `export-training-data.mjs` does.
 
 **The fix cost nothing measurable.** The over-matching rulings scrape withholds
 26 further rows out of 41,666 — it picks up suffix fragments like `ийн` out of
@@ -232,20 +232,20 @@ Everything else, each from its own command:
 
 ### ⚠ Two scripts say "top-1" about the same fixture and disagree by 34 forms
 
-This is a live instance of the failure mode `docs/neural-model.md` §1e names —
+This is a live instance of the failure mode gege-prism's `docs/neural-model.md` §1e names —
 a denominator (here, a *selection*) moved and the number kept its name — and it
 is worth knowing before quoting either.
 
 - `scripts/eval.mjs` scores
   `candidates.find(c => c.segmentation.suffixes.length > 0)` — the best
   **segmented** reading. On the 1,611 detached forms: **1,222 = 75.9%**.
-- `scripts/eval-model.mjs` and `scripts/status.mjs` score `candidates[0]` — what
+- gege-prism's `scripts/eval-model.mjs` and `scripts/status.mjs` score `candidates[0]` — what
   the converter would actually **emit**. On the same 1,611: **1,188 = 73.7%**.
 
 Both are honest and they answer different questions. eval.mjs is asking "can the
 morphology get there", which is the right question when the subject is the
 suffix table or the stem layer, and it is the definition every figure in `docs/`
-and the CHANGELOG was measured under. eval-model.mjs is asking "what does a user
+and the CHANGELOG was measured under. gege-prism's eval-model.mjs is asking "what does a user
 see", which is the right question when the subject is the model or a release.
 
 The 34-form gap is words where a whole-word reading outranks a correct segmented
@@ -264,7 +264,7 @@ are accumulated into a key that is never printed. Verified 2026-08-10:
   (4.1%) vanish**, and the printed `REAL DATA 87.3%` understates the real
   figure, which is 91.4% (100% minus the 8.6% guesser share).
 
-`eval.mjs` and `eval-model.mjs` both know about the tier — `eval-model.mjs`
+`eval.mjs` and gege-prism's `eval-model.mjs` both know about the tier — gege-prism's `eval-model.mjs`
 deliberately crashes on an unknown provenance rather than scoring it as
 something else. Quote those two for tier splits until `status.mjs` is fixed.
 
@@ -412,7 +412,7 @@ still in that file, so the mining run that produced these rows saw the eval set.
 `scripts/mine-verb-suffixes.mjs` now excludes them by default and the shares
 hold up when it does (`γad`/`γed` still dominant, `uγad`/`üγed` still the
 consonant-final variant) — which argues the rows are right, not that 42.6% is
-an out-of-sample number. `scripts/export-training-data.mjs` had this guard from
+an out-of-sample number. gege-prism's `scripts/export-training-data.mjs` had this guard from
 the start; the miner did not.
 
 Slightly **less** than half of that came from the rows: 4.0% → 24.0% with the
@@ -753,12 +753,12 @@ the same conclusion the tier slice reaches from the other direction.
 
 ### The model rows, and why they are a fair test (2026-07-31)
 
-Run with `--dump-words` and `--model`; predictions come from `training/convert.py`
+Run with `--dump-words` and `--model` (now gege-prism's `benchmark-hybrid.mjs`); predictions come from `training/convert.py`
 against `model-v3/model.pt`. Three things make the comparison legitimate, and one
 does not:
 
 - **No leak.** The benchmark set is drawn from `harvested-inflected.json`, and
-  `export-training-data.mjs` removes all 1,768 of those keys from train and val
+  gege-prism's `export-training-data.mjs` removes all 1,768 of those keys from train and val
   *by Cyrillic surface form*, asserting no leak before writing. The model has
   never seen these 604 words.
 - **Same handicap.** It has seen their *stems*, in other inflected forms — which
@@ -772,7 +772,7 @@ does not:
   neither number transfers to a reader-gold set.
 
 **The finding is the guessed slice: 88.24% WER → 29.41%.** That is the same
-result `neural-model.md` measured on gold (0.0% → 42.1%), reproduced on an
+result gege-prism's `neural-model.md` measured on gold (0.0% → 42.1%), reproduced on an
 independent set with the literature's metrics, and it is now the third
 measurement pointing at one conclusion.
 
@@ -781,7 +781,7 @@ relative reduction, and token-WER 21.51% → 12.31% because the guessed slice is
 frequency-heavy. Note what produces it — the model alone is only 21.52%, barely
 better than the pipeline. Neither component is close to the combination. The
 dictionaries win on data-backed types and the model wins on the guessed ones,
-which is precisely the arrangement `neural-model.md` specified, and it is worth
+which is precisely the arrangement gege-prism's `neural-model.md` specified, and it is worth
 more than either side's headline.
 
 ⚠ **Nothing here changes what ships.** Ruled 2026-07-30: the model is never in
@@ -814,7 +814,7 @@ They are not measuring the same thing, and the differences all push the same way
 - **Size.** 536 types against 1,355 forms, and the benchmark's is the narrower
   population by construction.
 
-**So `neural-model.md` item 2 — "revisit where the model sits" — is not settled,
+**So gege-prism's `neural-model.md` item 2 — "revisit where the model sits" — is not settled,
 and the gold-set reading of it is not sufficient grounds to act.** Its own
 instruction was "do not change this without measuring"; this is what measuring
 produced. A promotion would need a set that is neither Tungaamal-derived nor

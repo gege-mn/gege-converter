@@ -56,8 +56,8 @@ Package manager: pnpm on CI, servers and other machines (`pnpm-lock.yaml` is com
   sentences live outside this repo (`../gege-corpus`, `$GEGE_CORPUS`, or
   `--corpus PATH`) and are never released. Word pairs, rules and aggregate
   counts may cross in and ship; sentences and any fixture built from them never
-  do. A trained model memorises them, so `training/` must not become a runtime
-  dependency and no checkpoint trained on them may be published.
+  do. A trained model memorises them, so the model repo (gege-prism) must never
+  become a runtime dependency and no checkpoint trained on them may be published.
 - **Naming the outside world.** Encodings and converters may be named as
   technical artifacts — Tungaamal, Menksoft PUA, Saiyin. Company names, service
   domains, endpoints and anything reading as credit never appear.
@@ -85,7 +85,6 @@ Do not read these by default. Open one when its topic actually comes up.
 | `docs/roadmap.md` | choosing what to work on next |
 | `docs/rulings.md` | changing romanization, the guesser, the suffix table, or anything about o/ö |
 | `docs/architecture-rationale.md` | re-litigating algorithm-vs-model |
-| `docs/neural-model.md` | starting the model, or exporting training data |
 | `docs/parallel-corpus.md` | ingesting reader-written sentences, or scoring against them |
 | mongol-bichig `references/rulebook-2026.md` | which allomorph a stem selects, залгах vs дагуулах, or whether a rule generalises |
 | mongol-bichig `skills/mongol-bichig/references/` | any question about the script itself |
@@ -100,3 +99,6 @@ they cover — invisible characters, data rows, and the reader review loop.
   there. Install with `npx skills add gege-mn/mongol-bichig`.
 - **~/Projects/gege-linter** — validates bichig; this generates it. Stage 8 takes
   its `lint` as an **injected hook, not an import**.
+- **~/Projects/gege-prism** (private) — the neural model: training, its export,
+  its scorers and docs. It reads this repo's build and fixtures; nothing here
+  imports it. Model work goes there, not here.

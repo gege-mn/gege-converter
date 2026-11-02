@@ -52,7 +52,7 @@ Three things enforce it today, and they are cheap to keep:
   held out or it stops measuring anything.
 
 ⚠ **A trained model memorises its training data and would leak the corpus.**
-`training/` is already not a runtime dependency (`docs/neural-model.md`); this
+The model (gege-prism, a separate private repo) is already not a runtime dependency; this
 is a second, independent reason it must not become one, and a reason not to
 publish a checkpoint trained on these sentences.
 
