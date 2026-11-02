@@ -4,3 +4,7 @@ dist/
 .tmp
 __pycache__/
 .DS_Store
+
+# Bun is local-only on one Mac; CI/servers install from the committed pnpm/npm lockfile.
+bun.lock
+bun.lockb

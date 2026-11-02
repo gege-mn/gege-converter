@@ -45,7 +45,8 @@
     "review": "node scripts/build-review.mjs",
     "naming": "node scripts/build-naming.mjs",
     "dev": "node scripts/serve.mjs",
-    "ask": "node scripts/build-ask.mjs"
+    "ask": "node scripts/build-ask.mjs",
+    "lock": "bunx pnpm@10 install --lockfile-only"
   },
   "publishConfig": {
     "access": "public"

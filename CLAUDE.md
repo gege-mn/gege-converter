@@ -27,19 +27,19 @@ pure functions; only stage 7 (ranking) is statistical.
 
 ## Commands
 
-`pnpm build` · `pnpm typecheck` · `pnpm test` · `pnpm lint` — all four must pass
-before anything is called done. `pnpm status` prints where the converter stands;
+`bun run build` · `bun run typecheck` · `bun run test` · `bun run lint` — all four must pass
+before anything is called done. `bun run status` prints where the converter stands;
 `node scripts/eval.mjs` and `scripts/eval-corpus.mjs` are the two scores. Quote a
 number from a command, never from memory, and name the script that produced it.
 
-pnpm only — `npm`, `npx` and `pnpm exec` are blocked in this environment.
+Package manager: pnpm on CI, servers and other machines (`pnpm-lock.yaml` is committed); on the main Mac, which has no node/pnpm, use Bun — `bun install`, `bun run <script>` (never bare `bun build`/`bun test`), `bunx`. After any dependency change under Bun run `bun run lock`. Never npm/npx.
 
 ## Rules that hold in every session
 
 - **Never run `npm publish`.** Publishing is the owner's, never an agent's — the
   registry needs an OTP an agent cannot supply, so an attempt fails at best and
   half-releases at worst. You *may* bump the version, write the CHANGELOG, run
-  the four commands above, confirm `pnpm pack` ships the right files, then stop
+  the four commands above, confirm `bun pm pack --dry-run` ships the right files, then stop
   and report it ready. Same rule in gege-linter and mongol-bichig.
 - **Grade in SCRIPT, never in romanization.** γ/g and q/k are allographs of one
   letter chosen by vowel harmony, so `ger` and `γer` are the same word and the
