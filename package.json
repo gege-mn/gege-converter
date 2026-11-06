@@ -67,6 +67,6 @@
     "vitest": "^4.1.11"
   },
   "dependencies": {
-    "@gege-mn/mongol-bichig": "^0.2.3"
+    "@gege-mn/mongol-bichig": "^0.3.1"
   }
 }
