@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1 — 2026-11-06
+
+**mongol-bichig 0.3.1.** 0.7.0 was published on `^0.2.3`, so an app that
+also uses gege-linter 0.12.0 installed two copies of mongol-bichig. Conversion
+output is unchanged. One thing comes through the re-exported romanization:
+`_` is nirugu (U+180A), so `toScript('qi_')` no longer throws, and
+`fromScript` turns U+180A into `_` instead of passing it through. See
+mongol-bichig 0.3.0.
+
 ## 0.7.0 — 2026-11-03
 
 **ъ, ь and и before я/а/е are written i + y on a word the data does not
