@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@gege-mn/mongol-bichig':
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.4.0
+        version: 0.4.0
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.5.15
@@ -84,8 +84,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@gege-mn/mongol-bichig@0.3.1':
-    resolution: {integrity: sha512-a94ndlPT7jNkxXPkAqOp9RSHkidmqvrRGgImMSbYUm0opUsBTyrdetbAjSv7ApvICo3LIR3hq1p6VbOlx+1nug==}
+  '@gege-mn/mongol-bichig@0.4.0':
+    resolution: {integrity: sha512-lfw57HZ7ZHcsw0EPQipCrKBkwgpwt0QnHOhyKdFWO4mEZl4OYwMVkwG7R0GAlkBr6c+xm0YpPDHZK49UENgGAg==}
     engines: {node: '>=18'}
 
   '@jridgewell/sourcemap-codec@1.6.0':
@@ -543,7 +543,7 @@ snapshots:
   '@biomejs/cli-win32-x64@2.5.15':
     optional: true
 
-  '@gege-mn/mongol-bichig@0.3.1': {}
+  '@gege-mn/mongol-bichig@0.4.0': {}
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0 — 2026-11-07
+
+**ᠱ before ᠢ keeps its dots.** Through mongol-bichig 0.4.0's `toScript`,
+every SHA before I is now written SHA + FVS2 + I: the font draws a bare SHA I
+without dots, so жишээ and жишиг came out looking as if spelled with ᠰ.
+It goes by letters, with no word list, so it covers guessed words too
+(owner's ruling, 2026-11-07); 78 words in the bundled lists change. Minor
+rather than patch because default output changes. `eval.mjs` and
+`eval-corpus.mjs` score the same on 0.3.1 and 0.4.0. Also: gege-linter
+0.13.0's `undotted-sha` reports the bare pair, so the two agree.
+
 ## 0.7.1 — 2026-11-06
 
 **mongol-bichig 0.3.1.** 0.7.0 was published on `^0.2.3`, so an app that
