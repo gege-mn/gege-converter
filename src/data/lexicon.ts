@@ -650,6 +650,12 @@ export const lexicon: readonly LexiconEntry[] = [
   // яах, "to do what" — reader: "йагахиху". We had `yaqu`, which is the wrong
   // verb entirely; the stem is яагахи-, not яа-.
   { cyrillic: 'яах', classical: 'yaγaqiqu', gloss: 'to do what', freq: 1 },
+  // Owner, 2026-11-09: «Монгол бахархлын өдрийн мэнд хүргэе!» is `mongγul
+  // baqarqal-un edür-ün mendü kürgey-e!`. мэнд was read as the harvest's мэн
+  // `meng` plus a dative; хүргэе is the voluntative, which the verb table has
+  // no row for, so the form is a row of its own until it does.
+  { cyrillic: 'мэнд', classical: 'mendü', gloss: 'greeting, health', freq: 1, hiddenN: false },
+  { cyrillic: 'хүргэе', classical: 'kürgey-e', gloss: 'let us convey', freq: 1, hiddenN: false },
 ];
 
 const buildIndex = (entries: readonly LexiconEntry[]): ReadonlyMap<string, LexiconEntry[]> => {

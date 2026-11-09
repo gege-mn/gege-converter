@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.1 — 2026-11-09
+
+**мэнд and хүргэе.** «Монгол бахархлын өдрийн мэнд хүргэе!» now converts to
+`mongγul baqarqal-un edür-ün mendü kürgey-e!` (owner's reading, 2026-11-09).
+мэнд was read as the harvest's мэн `meng` plus a dative, giving `meng-dü`;
+it is now `mendü`, so мэндийн is `mendü-yin` and мэндээ `mendü-ben`. хүргэе
+gave `kürgee`; the voluntative has no row in the verb table yet, so the form
+is a lexicon row of its own.
+
 ## 0.8.0 — 2026-11-07
 
 **ᠱ before ᠢ keeps its dots.** Through mongol-bichig 0.4.0's `toScript`,
